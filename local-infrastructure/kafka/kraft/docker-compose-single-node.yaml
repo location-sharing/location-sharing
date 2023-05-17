@@ -1,0 +1,45 @@
+version: '3'
+name: "kafka-single-node"
+services:
+  kafka1:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "9997:9997"
+    environment:
+      KAFKA_NODE_ID: 1
+
+      KAFKA_LISTENERS: LISTENER_CONTROLLER://kafka1:9093,LISTENER_INTERNAL://kafka1:29092,LISTENER_EXTERNAL://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_CONTROLLER:PLAINTEXT,LISTENER_INTERNAL:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka1:29092,LISTENER_EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'LISTENER_CONTROLLER'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+      KAFKA_METRICS_JMX_ENABLED: true
+
+      # by default there are 3 replicas configured, but the default doesn't work in a single-broker cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    volumes:
+      - ./run_workaround.sh:/tmp/run_workaround.sh
+    command: "bash -c '/tmp/run_workaround.sh && /etc/confluent/docker/run'"
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8081:8080
+    depends_on:
+      - kafka1
+    environment:
+      KAFKA_CLUSTERS_0_NAME: kafka-test
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:29092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997
+      DYNAMIC_CONFIG_ENABLED: 'true'
+  
+   

@@ -1,0 +1,35 @@
+spring:
+  kafka:
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer:
+      # only consume the latest values
+      auto-offset-reset: latest
+      group-id: session-service
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+      properties:
+        spring:
+          json:
+            use.type.headers: false
+
+    bootstrap-servers: localhost:9092
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+#logging.level:
+#  org.springframework: DEBUG
+
+store_connection:
+  topic: "session.store.connection"
+  cache_group_ttl: 21600 # 6h
+
+remove_connection:
+  topic:  "session.remove.connection"

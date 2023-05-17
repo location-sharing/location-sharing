@@ -1,0 +1,25 @@
+ktor:
+  development: true
+  deployment:
+    host: "0.0.0.0"
+    port: 8080
+  application:
+    modules:
+      - edu.ApplicationKt.module
+
+kafka:
+  # leader confirms is enough
+  acks: 1
+
+  bootstrap.servers: "localhost:9092"
+
+  key.serializer: org.apache.kafka.common.serialization.StringSerializer
+  key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  value.serializer: edu.location.sharing.util.JsonSerializer
+  value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+kafka_topics:
+  session_store_connection_topic: "session.store.connection"
+  session_remove_connection_topic: "session.remove.connection"
+  gateway_receive_topic_prefix: "gateway.receive"
