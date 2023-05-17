@@ -33,3 +33,6 @@ store_connection:
 
 remove_connection:
   topic:  "session.remove.connection"
+
+client_messages:
+  topic: "session.client.message"

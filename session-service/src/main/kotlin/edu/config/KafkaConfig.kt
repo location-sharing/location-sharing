@@ -1,7 +1,9 @@
 package edu.config
 
+import edu.location.sharing.models.events.ClientMessageEvent
 import edu.location.sharing.models.events.RemoveConnectionEvent
 import edu.location.sharing.models.events.StoreConnectionEvent
+import edu.location.sharing.util.ClientMessageEventDeserializer
 import edu.location.sharing.util.RemoveConnectionEventDeserializer
 import edu.location.sharing.util.StoreConnectionEventDeserializer
 import org.apache.kafka.common.serialization.Deserializer
@@ -21,6 +23,9 @@ class KafkaConfig(
     @Value("\${remove_connection.topic}")
     val removeConnectionTopic: String,
 
+    @Value("\${client_messages.topic}")
+    val clientMessagesTopic: String,
+
     val kafkaProperties: KafkaProperties,
 ) {
 
@@ -38,4 +43,8 @@ class KafkaConfig(
     @Bean
     fun removeConnectionConsumerTemplate(): ReactiveKafkaConsumerTemplate<String, RemoveConnectionEvent> =
         getConsumer(removeConnectionTopic, RemoveConnectionEventDeserializer)
+
+    @Bean
+    fun clientMessageConsumerTemplate(): ReactiveKafkaConsumerTemplate<String, ClientMessageEvent> =
+        getConsumer(clientMessagesTopic, ClientMessageEventDeserializer)
 }

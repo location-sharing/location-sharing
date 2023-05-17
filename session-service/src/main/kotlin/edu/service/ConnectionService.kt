@@ -1,5 +1,6 @@
 package edu.service
 
+import edu.location.sharing.models.events.ClientMessageEvent
 import edu.location.sharing.models.events.RemoveConnectionEvent
 import edu.location.sharing.models.events.StoreConnectionEvent
 import edu.location.sharing.util.logger
@@ -22,5 +23,9 @@ class ConnectionService(
 
     fun removeConnection(event: RemoveConnectionEvent): Mono<Long> {
         return redisRepository.removeConnection(event)
+    }
+
+    fun getGroupConnections(groupId: String) {
+        return redisRepository.
     }
 }

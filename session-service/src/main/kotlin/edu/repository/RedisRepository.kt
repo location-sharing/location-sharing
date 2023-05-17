@@ -41,4 +41,6 @@ class RedisRepository(
             .doOnError { log.error("error while removing connection $event", it) }
             .onErrorResume { Mono.empty() }
     }
+
+    fun getGroupConnections(groupId: String): 
 }
