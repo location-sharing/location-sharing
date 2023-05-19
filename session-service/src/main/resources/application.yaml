@@ -1,16 +1,19 @@
 spring:
   kafka:
-    producer:
-      value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    # common settings for all producers and consumers
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
     consumer:
+
       # only consume the latest values
       auto-offset-reset: latest
       group-id: session-service
 
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
 
       properties:
         spring:
@@ -35,4 +38,5 @@ remove_connection:
   topic:  "session.remove.connection"
 
 client_messages:
-  topic: "session.client.message"
+  inbound.topic: "session.client.message"
+  outbound.topic: "gateway.client.message"

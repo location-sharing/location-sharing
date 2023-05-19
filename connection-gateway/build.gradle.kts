@@ -31,8 +31,9 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-config-yaml:$ktor_version")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("org.apache.kafka:kafka-clients:3.4.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
 
     /********************* Inter-project dependencies *********************/
     implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")

@@ -1,12 +1,14 @@
 package edu.repository
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import edu.config.RedisConfig
 import edu.location.sharing.models.events.RemoveConnectionEvent
 import edu.location.sharing.models.events.StoreConnectionEvent
 import edu.location.sharing.util.logger
-import edu.location.sharing.util.objectMapper
+import edu.util.objectMapper
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Duration
 
@@ -39,8 +41,18 @@ class RedisRepository(
             .remove(event.groupId, objectMapper.writeValueAsString(event))
             .doOnNext { log.info("removed connection $event") }
             .doOnError { log.error("error while removing connection $event", it) }
-            .onErrorResume { Mono.empty() }
     }
 
-    fun getGroupConnections(groupId: String): 
+    fun getGroupConnections(groupId: String): Flux<StoreConnectionEvent> {
+        return redisTemplate.opsForSet()
+            .members(groupId)
+            .doOnNext { log.info("retrieved connection group connection $it") }
+            .doOnError { log.error("error while fetching group connection for group $groupId") }
+            .onErrorResume { Mono.empty() }
+            .map { objectMapper.readValue(it, StoreConnectionEvent::class.java) }
+            .doOnError(JsonProcessingException::class.java) {
+                log.error("error while converting String to StoreConnectionEvent", it)
+            }
+            .onErrorResume { Mono.empty() }
+    }
 }

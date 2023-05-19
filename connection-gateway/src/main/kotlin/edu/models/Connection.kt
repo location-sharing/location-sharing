@@ -1,6 +1,8 @@
-package edu.connections
+package edu.models
 
 import io.ktor.websocket.*
 
-class Connection(session: WebSocketSession)
+data class Connection(
+    val session: WebSocketSession
+)
 

@@ -1,5 +1,6 @@
-package edu.connections
+package edu.service
 
+import edu.models.Connection
 import java.util.*
 
 class ConnectionStore {
@@ -16,6 +17,10 @@ class ConnectionStore {
 
         fun remove(connectionId: UUID) {
             connections.remove(connectionId)
+        }
+
+        fun get(connectionId: UUID): Connection? {
+            return connections[connectionId]
         }
     }
 }

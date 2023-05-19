@@ -1,29 +1,25 @@
 package edu.api.consumers
 
+import edu.config.KafkaConfig
 import edu.location.sharing.models.events.StoreConnectionEvent
 import edu.location.sharing.util.logger
 import edu.service.ConnectionService
-import org.springframework.kafka.core.reactive.ReactiveKafkaConsumerTemplate
+import edu.util.objectMapper
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import reactor.core.scheduler.Scheduler
-import reactor.core.scheduler.Schedulers
 
 @Component
 class StoreConnectionConsumer(
-    private val consumer: ReactiveKafkaConsumerTemplate<String, StoreConnectionEvent>,
+    kafkaConfig: KafkaConfig,
     private val connectionService: ConnectionService
+): GenericConsumer<String, StoreConnectionEvent>(
+    kafkaConfig,
+    kafkaConfig.storeConnectionTopic,
+    { _, data -> objectMapper.readValue(data, StoreConnectionEvent::class.java) }
 ) {
+    override val log = logger()
 
-    private val log = logger()
-
-    fun createFlux(): Flux<Any> {
-        log.info("creating event flux in ${this::class.qualifiedName}")
-        return consumer
-            .receiveAutoAck()
-            .publishOn(Schedulers.parallel())
-            .doOnNext { log.info("received record $it") }
-            .map { it.value() }
-            .flatMap { connectionService.cacheConnection(it) }
+    override fun processFlux(flux: Flux<StoreConnectionEvent>): Flux<Any> {
+        return flux.flatMap { connectionService.cacheConnection(it) }
     }
 }

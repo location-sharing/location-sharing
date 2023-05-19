@@ -1,20 +1,19 @@
 package edu.plugins
 
-import edu.config.KafkaConfig
-import edu.connections.Connection
-import edu.connections.ConnectionStore
+import edu.api.producers.ClientMessageProducer
+import edu.api.producers.ConnectionEventProducer
+import edu.location.sharing.models.events.ClientMessageEvent
 import edu.location.sharing.models.events.RemoveConnectionEvent
 import edu.location.sharing.models.events.StoreConnectionEvent
+import edu.models.Connection
 import edu.models.Message
-import edu.service.ClientMessageSender
-import edu.service.ConnectionEventSender
+import edu.service.ConnectionStore
+import edu.util.objectMapper
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.*
@@ -33,7 +32,7 @@ fun Application.configureSockets() {
 
         webSocket("/location") {
 
-            // TODO: verify JWT
+            // TODO: verify JWT, use it to send StoreConnectionEvent?
 
             // for now use the first frame to set the connection
 
@@ -51,17 +50,15 @@ fun Application.configureSockets() {
             LOG.info("user ${firstMessage.userId} connected, connection stored with id $connectionId")
 
             sendStoreConnectionEvent(connectionId, firstMessage)
-            sendClientMessage(firstMessage)
+            sendClientMessage(connectionId, firstMessage)
 
             // TODO: send response after connection has been stored by the session service?
 
             try {
-               processMessages()
+               processMessages(connectionId)
             } catch (e: ClosedReceiveChannelException) {
-                // connection closed successfully
                 LOG.info("connection with id $connectionId closed")
             } catch (e: Exception) {
-                // connection closed with an exception
                 LOG.warn("connection with id $connectionId closed with exception: $e")
             } finally {
                 sendRemoveConnectionEvent(connectionId, firstMessage)
@@ -73,12 +70,10 @@ fun Application.configureSockets() {
 }
 
 private fun parseMessage(frame: Frame.Text): Message {
-    return Json.decodeFromString(frame.readText())
+    return objectMapper.readValue(frame.readText(), Message::class.java)
 }
 
-class InvalidFrameFormatException(
-//    override val message: String? = null
-): Exception()
+class InvalidFrameFormatException: Exception()
 
 private suspend inline fun WebSocketSession.parseFirstMessage(): Message {
     val firstFrame = incoming.receive()
@@ -96,34 +91,7 @@ private suspend inline fun WebSocketSession.parseFirstMessage(): Message {
     }
 }
 
-private fun WebSocketSession.storeThisConnection(): UUID = ConnectionStore.put(Connection(this))
-private fun removeConnection(connectionId: UUID) = ConnectionStore.remove(connectionId)
-
-private fun sendStoreConnectionEvent(connectionId: UUID, message: Message) {
-    ConnectionEventSender.sendStoreConnectionEvent(
-        StoreConnectionEvent(
-            message.userId,
-            message.groupId,
-            connectionId.toString(),
-            KafkaConfig.receiveTopic
-        )
-    )
-}
-
-private fun sendRemoveConnectionEvent(connectionId: UUID, message: Message) {
-    ConnectionEventSender.sendRemoveConnectionEvent(
-        RemoveConnectionEvent(
-            message.userId,
-            message.groupId,
-            connectionId.toString(),
-            KafkaConfig.receiveTopic
-        )
-    )
-}
-
-private fun sendClientMessage(message: Message) = ClientMessageSender.sendMessage(message)
-
-private suspend fun WebSocketSession.processMessages() {
+private suspend fun WebSocketSession.processMessages(connectionId: UUID) {
     for (frame in incoming) {
         if (frame !is Frame.Text) {
             LOG.warn("incoming frame is not text, ignoring it")
@@ -139,5 +107,38 @@ private suspend fun WebSocketSession.processMessages() {
         }
 
         LOG.info("received message from user: ${message.userId}")
+        sendClientMessage(connectionId, message)
     }
 }
+
+private fun WebSocketSession.storeThisConnection(): UUID = ConnectionStore.put(Connection(this))
+private fun removeConnection(connectionId: UUID) = ConnectionStore.remove(connectionId)
+
+private fun sendStoreConnectionEvent(connectionId: UUID, message: Message) {
+    ConnectionEventProducer.sendStoreConnectionEvent(
+        StoreConnectionEvent(
+            message.userId,
+            message.groupId,
+            connectionId.toString(),
+        )
+    )
+}
+
+private fun sendRemoveConnectionEvent(connectionId: UUID, message: Message) {
+    ConnectionEventProducer.sendRemoveConnectionEvent(
+        RemoveConnectionEvent(
+            message.userId,
+            message.groupId,
+            connectionId.toString(),
+        )
+    )
+}
+
+private fun sendClientMessage(connectionId: UUID, message: Message) = ClientMessageProducer.send(
+    ClientMessageEvent(
+        message.userId,
+        message.groupId,
+        connectionId.toString(),
+        message.content
+    )
+)

@@ -31,8 +31,8 @@ dependencies {
     implementation("io.projectreactor.kafka:reactor-kafka")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 
-    implementation("com.fasterxml.jackson.core:jackson-databind")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
 
     /********************* Inter-project dependencies *********************/
     implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")
