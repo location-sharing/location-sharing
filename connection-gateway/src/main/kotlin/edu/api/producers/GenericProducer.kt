@@ -3,6 +3,8 @@ package edu.api.producers
 import edu.config.KafkaConfig
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.header.Header
+import org.apache.kafka.common.header.Headers
 import org.apache.kafka.common.serialization.Serializer
 import org.slf4j.Logger
 
@@ -21,9 +23,15 @@ abstract class GenericProducer<K, V>(
         producer = KafkaProducer(kafkaOptions, keySerializer, valueSerializer)
     }
 
-    fun sendEvent(event: V, topic: String, key: K? = null) {
+    fun sendEvent(
+        event: V,
+        topic: String,
+        key: K? = null,
+        partition: Int? = null,
+        headers: Iterable<Header>? = null
+    ) {
         producer.send(
-            ProducerRecord(topic, key, event)
+            ProducerRecord(topic, partition, key, event, headers)
         ) {
                 metadata, ex ->
             if (ex != null) {

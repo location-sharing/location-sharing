@@ -1,7 +1,8 @@
 package edu.api.producers
 
 import edu.config.KafkaConfig
-import org.apache.kafka.common.serialization.Serializer
+import edu.util.kafkaByteArraySerializer
+import edu.util.objectMapper
 import org.slf4j.Logger
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import reactor.core.publisher.Mono
@@ -12,17 +13,16 @@ import reactor.kafka.sender.SenderResult
 import java.time.Instant
 
 
-abstract class GenericReactiveProducer<K, V>(
+abstract class GenericProducer(
     kafkaConfig: KafkaConfig,
-    valueSerializer: Serializer<V>,
 ){
     abstract val log: Logger
-    protected val producer: ReactiveKafkaProducerTemplate<K, V>
+    protected val producer: ReactiveKafkaProducerTemplate<String, ByteArray>
 
     init {
         val producerProps = kafkaConfig.kafkaProperties.buildProducerProperties()
-        val senderOptions = SenderOptions.create<K, V>(producerProps)
-            .withValueSerializer(valueSerializer)
+        val senderOptions = SenderOptions.create<String, ByteArray>(producerProps)
+            .withValueSerializer(kafkaByteArraySerializer)
         producer = ReactiveKafkaProducerTemplate(senderOptions)
     }
 
@@ -30,7 +30,7 @@ abstract class GenericReactiveProducer<K, V>(
         log.error("error while sending record to topic $topic", error)
     }
 
-    private fun logResults(result: SenderResult<V>) {
+    private fun logResults(result: SenderResult<*>) {
         val metadata = result.recordMetadata()
         val record = result.correlationMetadata()
         val time = Instant.ofEpochMilli(metadata.timestamp())
@@ -40,16 +40,15 @@ abstract class GenericReactiveProducer<K, V>(
         )
     }
 
-    fun send(topic: String, value: V): Mono<SenderResult<V>> {
-        return producer.send(
-            SenderRecord.create<K, V, V>(topic, null, null, null, value, value)
-        )
+    protected fun <V> send(record: SenderRecord<String, ByteArray, V>): Mono<SenderResult<V>> {
+        return producer.send(record)
             .publishOn(Schedulers.parallel())
-            .doOnError { logErrors(topic, it) }
+            .doOnError { logErrors(record.topic(), it) }
     }
 
-    fun sendWithResultLogging(topic: String, value: V): Mono<SenderResult<V>> {
-        return send(topic, value)
+    protected fun <V> sendWithResultLogging(record: SenderRecord<String, ByteArray, V>):
+            Mono<SenderResult<V>> {
+        return send(record)
             .doOnNext { logResults(it) }
     }
 }

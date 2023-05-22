@@ -4,13 +4,11 @@ import org.springframework.stereotype.Service
 
 @Service
 class ConsumerInit(
-    storeConnectionConsumer: StoreConnectionConsumer,
-    removeConnectionConsumer: RemoveConnectionConsumer,
+    connectionEventConsumer: ConnectionEventConsumer,
     clientMessageConsumer: ClientMessageConsumer,
 ){
     init {
-        storeConnectionConsumer.createFlux().subscribe()
-        removeConnectionConsumer.createFlux().subscribe()
+        connectionEventConsumer.createFlux().subscribe()
         clientMessageConsumer.createFlux().subscribe()
     }
 }
