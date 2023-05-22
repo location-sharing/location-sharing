@@ -5,7 +5,7 @@ import edu.location.sharing.models.events.ClientMessageEvent
 import edu.models.Message
 import java.util.*
 
-object MessageService {
+object MessageEventService {
 
     fun sendClientMessageEvent(connectionId: UUID, message: Message) = ClientMessageProducer.send(
         ClientMessageEvent(

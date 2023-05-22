@@ -19,7 +19,6 @@ kafka:
   group.id: "connection-gateway"
 
 kafka_topics:
-  session_store_connection_topic: "session.store.connection"
-  session_remove_connection_topic: "session.remove.connection"
+  session_connection_events_topic: "session.connection.events"
   session_client_message_topic: "session.client.message"
   gateway_client_message_topic: "gateway.client.message"

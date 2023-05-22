@@ -30,15 +30,12 @@ spring:
 #logging.level:
 #  org.springframework: DEBUG
 
-store_connection:
-  topic: "session.store.connection"
-  cache_connection_group_ttl: PT2M
-  cache_connection_ttl: PT2M
-
-remove_connection:
-  topic:  "session.remove.connection"
-
-client_messages:
-  topic:
+topics:
+  connection_events: "session.connection.events"
+  client_messages:
     inbound: "session.client.message"
     outbound: "gateway.client.message"
+
+cache:
+  connection_group_ttl: PT2M
+  connection_ttl: PT2M

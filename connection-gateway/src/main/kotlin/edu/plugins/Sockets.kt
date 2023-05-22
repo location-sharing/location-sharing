@@ -5,7 +5,7 @@ import edu.service.ConnectionService.removeConnection
 import edu.service.ConnectionService.sendRemoveConnectionEvent
 import edu.service.ConnectionService.sendStoreConnectionEvent
 import edu.service.ConnectionService.storeConnection
-import edu.service.MessageService.sendClientMessageEvent
+import edu.service.MessageEventService.sendClientMessageEvent
 import edu.util.objectMapper
 import io.ktor.server.application.*
 import io.ktor.server.routing.*

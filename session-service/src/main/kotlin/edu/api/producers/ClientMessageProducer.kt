@@ -30,9 +30,7 @@ class ClientMessageProducer(
             null,
             null,
             jsonBytes,
-            listOf(
-                EventTypeKafkaHeader(EventType.CLIENT_MESSAGE)
-            )
+            listOf(EventTypeKafkaHeader(EventType.CLIENT_MESSAGE))
         )
 
         return super.sendWithResultLogging(SenderRecord.create(producerRecord, event))

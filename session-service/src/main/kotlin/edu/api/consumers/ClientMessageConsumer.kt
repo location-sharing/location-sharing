@@ -21,7 +21,7 @@ class ClientMessageConsumer(
 ){
     override val log = logger()
 
-    override fun processFlux(flux: Flux<Pair<EventType, ByteArray>>): Flux<out Any> {
+    override fun processFlux(flux: Flux<Pair<EventType, ByteArray>>): Flux<*> {
         return flux
             .flatMap { (eventType, data) ->
                 if (EventType.CLIENT_MESSAGE == eventType) {

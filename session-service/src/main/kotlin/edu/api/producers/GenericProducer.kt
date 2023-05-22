@@ -1,8 +1,8 @@
 package edu.api.producers
 
 import edu.config.KafkaConfig
-import edu.util.kafkaByteArraySerializer
-import edu.util.objectMapper
+import org.apache.kafka.common.serialization.ByteArraySerializer
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.springframework.kafka.core.reactive.ReactiveKafkaProducerTemplate
 import reactor.core.publisher.Mono
@@ -19,10 +19,16 @@ abstract class GenericProducer(
     abstract val log: Logger
     protected val producer: ReactiveKafkaProducerTemplate<String, ByteArray>
 
+    companion object {
+        private val stringSerializer = StringSerializer()
+        private val byteArraySerializer = ByteArraySerializer()
+    }
+
     init {
         val producerProps = kafkaConfig.kafkaProperties.buildProducerProperties()
         val senderOptions = SenderOptions.create<String, ByteArray>(producerProps)
-            .withValueSerializer(kafkaByteArraySerializer)
+            .withKeySerializer(stringSerializer)
+            .withValueSerializer(byteArraySerializer)
         producer = ReactiveKafkaProducerTemplate(senderOptions)
     }
 

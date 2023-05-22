@@ -17,11 +17,11 @@ class ConnectionEventConsumer(
     private val connectionService: ConnectionService
 ): GenericConsumer(
     kafkaConfig,
-    kafkaConfig.storeConnectionTopic,
+    kafkaConfig.connectionEventsTopic,
 ) {
     override val log = logger()
 
-    override fun processFlux(flux: Flux<Pair<EventType, ByteArray>>): Flux<Any> {
+    override fun processFlux(flux: Flux<Pair<EventType, ByteArray>>): Flux<*> {
         return flux
             .flatMap { (eventType, data) ->
                 when(eventType) {

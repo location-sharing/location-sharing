@@ -7,16 +7,13 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class KafkaConfig(
 
-    @Value("\${store_connection.topic}")
-    val storeConnectionTopic: String,
+    @Value("\${topics.connection_events}")
+    val connectionEventsTopic: String,
 
-    @Value("\${remove_connection.topic}")
-    val removeConnectionTopic: String,
-
-    @Value("\${client_messages.topic.inbound}")
+    @Value("\${topics.client_messages.inbound}")
     val clientMessagesInboundTopic: String,
 
-    @Value("\${client_messages.topic.outbound}")
+    @Value("\${topics.client_messages.outbound}")
     val clientMessagesOutboundTopic: String,
 
     val kafkaProperties: KafkaProperties,

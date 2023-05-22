@@ -9,13 +9,12 @@ import java.time.Duration
 
 @Configuration
 class RedisConfig(
-    @Value("\${store_connection.cache_connection_group_ttl:PT5M}")
+    @Value("\${cache.connection_group_ttl:PT5M}")
     val connectionGroupTtl: Duration,
 
-    @Value("\${store_connection.cache_connection_ttl:PT5M}")
+    @Value("\${cache.connection_ttl:PT5M}")
     val connectionTtl: Duration,
 ) {
-
     @Bean
     fun reactiveStringRedisTemplate(connectionFactory: ReactiveRedisConnectionFactory):
             ReactiveStringRedisTemplate = ReactiveStringRedisTemplate(connectionFactory)

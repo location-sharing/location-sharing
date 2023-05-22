@@ -81,19 +81,6 @@ class RedisRepository(
             .doOnError { log.error("error while deleting connection $connectionId", it) }
     }
 
-//    fun getGroupConnections(groupId: String): Flux<StoreConnectionEvent> {
-//        return redisTemplate.opsForSet()
-//            .members(groupId)
-//            .doOnNext { log.info("retrieved connection group connection $it") }
-//            .doOnError { log.error("error while fetching group connection for group $groupId") }
-//            .onErrorResume { Mono.empty() }
-//            .map { objectMapper.readValue(it, StoreConnectionEvent::class.java) }
-//            .doOnError(JsonProcessingException::class.java) {
-//                log.error("error while converting String to StoreConnectionEvent", it)
-//            }
-//            .onErrorResume { Mono.empty() }
-//    }
-
     fun getGroupConnections(groupId: String): Flux<StoreConnectionEvent> {
         return fetchGroupConnections(groupId)
             .flatMap { fetchConnection(it) }
