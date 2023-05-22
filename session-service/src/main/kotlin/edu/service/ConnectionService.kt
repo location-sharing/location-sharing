@@ -23,11 +23,10 @@ class ConnectionService(
     // TODO: use DTOs
     fun cacheConnection(event: StoreConnectionEvent): Mono<Void> {
         return redisRepository.storeConnection(event)
-            .then(redisRepository.setExpirationTime(event))
             .then()
     }
 
-    fun removeConnection(event: RemoveConnectionEvent): Mono<Long> {
+    fun removeConnection(event: RemoveConnectionEvent): Mono<Boolean> {
         return redisRepository.removeConnection(event)
     }
 

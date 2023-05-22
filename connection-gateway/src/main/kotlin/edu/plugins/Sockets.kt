@@ -1,13 +1,11 @@
 package edu.plugins
 
-import edu.api.producers.ClientMessageProducer
-import edu.api.producers.ConnectionEventProducer
-import edu.location.sharing.models.events.ClientMessageEvent
-import edu.location.sharing.models.events.RemoveConnectionEvent
-import edu.location.sharing.models.events.StoreConnectionEvent
-import edu.models.Connection
 import edu.models.Message
-import edu.service.ConnectionStore
+import edu.service.ConnectionService.removeConnection
+import edu.service.ConnectionService.sendRemoveConnectionEvent
+import edu.service.ConnectionService.sendStoreConnectionEvent
+import edu.service.ConnectionService.storeConnection
+import edu.service.MessageService.sendClientMessageEvent
 import edu.util.objectMapper
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -46,11 +44,11 @@ fun Application.configureSockets() {
                 return@webSocket
             }
 
-            val connectionId = storeThisConnection()
+            val connectionId = storeConnection(this)
             LOG.info("user ${firstMessage.userId} connected, connection stored with id $connectionId")
 
             sendStoreConnectionEvent(connectionId, firstMessage)
-            sendClientMessage(connectionId, firstMessage)
+            sendClientMessageEvent(connectionId, firstMessage)
 
             // TODO: send response after connection has been stored by the session service?
 
@@ -107,38 +105,6 @@ private suspend fun WebSocketSession.processMessages(connectionId: UUID) {
         }
 
         LOG.info("received message from user: ${message.userId}")
-        sendClientMessage(connectionId, message)
+        sendClientMessageEvent(connectionId, message)
     }
 }
-
-private fun WebSocketSession.storeThisConnection(): UUID = ConnectionStore.put(Connection(this))
-private fun removeConnection(connectionId: UUID) = ConnectionStore.remove(connectionId)
-
-private fun sendStoreConnectionEvent(connectionId: UUID, message: Message) {
-    ConnectionEventProducer.sendStoreConnectionEvent(
-        StoreConnectionEvent(
-            message.userId,
-            message.groupId,
-            connectionId.toString(),
-        )
-    )
-}
-
-private fun sendRemoveConnectionEvent(connectionId: UUID, message: Message) {
-    ConnectionEventProducer.sendRemoveConnectionEvent(
-        RemoveConnectionEvent(
-            message.userId,
-            message.groupId,
-            connectionId.toString(),
-        )
-    )
-}
-
-private fun sendClientMessage(connectionId: UUID, message: Message) = ClientMessageProducer.send(
-    ClientMessageEvent(
-        message.userId,
-        message.groupId,
-        connectionId.toString(),
-        message.content
-    )
-)

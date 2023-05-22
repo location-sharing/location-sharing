@@ -13,10 +13,10 @@ class KafkaConfig(
     @Value("\${remove_connection.topic}")
     val removeConnectionTopic: String,
 
-    @Value("\${client_messages.inbound.topic}")
+    @Value("\${client_messages.topic.inbound}")
     val clientMessagesInboundTopic: String,
 
-    @Value("\${client_messages.outbound.topic}")
+    @Value("\${client_messages.topic.outbound}")
     val clientMessagesOutboundTopic: String,
 
     val kafkaProperties: KafkaProperties,

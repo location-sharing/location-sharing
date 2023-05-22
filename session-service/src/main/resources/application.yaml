@@ -32,11 +32,13 @@ spring:
 
 store_connection:
   topic: "session.store.connection"
-  cache_group_ttl: 21600 # 6h
+  cache_connection_group_ttl: PT2M
+  cache_connection_ttl: PT2M
 
 remove_connection:
   topic:  "session.remove.connection"
 
 client_messages:
-  inbound.topic: "session.client.message"
-  outbound.topic: "gateway.client.message"
+  topic:
+    inbound: "session.client.message"
+    outbound: "gateway.client.message"

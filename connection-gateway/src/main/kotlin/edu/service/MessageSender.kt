@@ -4,7 +4,6 @@ import edu.location.sharing.util.logger
 import edu.models.Message
 import edu.util.objectMapper
 import io.ktor.websocket.*
-import kotlinx.coroutines.isActive
 import java.util.*
 
 object MessageSender {
@@ -19,7 +18,6 @@ object MessageSender {
             )
         )
 
-        connection?.session?.
         logger.info("sent message $message on connection $connection")
     }
 }
