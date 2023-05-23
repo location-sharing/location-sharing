@@ -10,6 +10,8 @@ import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import reactor.core.publisher.SignalType
+import reactor.core.publisher.Sinks
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 
@@ -26,11 +28,34 @@ class RedisRepository(
     private val connectionKeyPrefix = "connection:"
     private val connectionGroupKeyPrefix = "group:"
 
-    fun storeConnection(event: StoreConnectionEvent): Mono<Boolean> {
+    private val connectionTtlSink = Sinks.many().unicast().onBackpressureBuffer<String>()
+    private val connectionGroupTtlSink = Sinks.many().unicast().onBackpressureBuffer<String>()
+
+    init {
+        // consume events from the TTL sinks
+        connectionTtlSink.asFlux()
+            .bufferTimeout(100, Duration.ofSeconds(20))
+            .flatMap { Flux.fromStream(it.stream().distinct()) }
+            .flatMap { setConnectionTtl(it) }
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe()
+
+        connectionGroupTtlSink.asFlux()
+            .bufferTimeout(100, Duration.ofSeconds(20))
+            .flatMap { Flux.fromStream(it.stream().distinct()) }
+            .flatMap { setConnectionGroupTtl(it) }
+            .subscribeOn(Schedulers.boundedElastic())
+            .subscribe()
+    }
+
+    fun storeConnection(event: StoreConnectionEvent): Mono<Void> {
         return addConnection(event.connectionId, event)
             .then(setConnectionTtl(event.connectionId))
+//            .doOnNext { sinkConnectionTtl(event.connectionId) }
             .then(addConnectionToGroup(event.connectionId, event.groupId))
             .then(setConnectionGroupTtl(event.groupId))
+//            .doOnNext { sinkConnectionGroupTtl(event.groupId) }
+            .then()
     }
 
     private fun addConnection(connectionId: String, event: StoreConnectionEvent): Mono<Boolean> {
@@ -46,12 +71,22 @@ class RedisRepository(
             .doOnError { log.error("error while storing connection $connectionId in group $groupId", it) }
     }
 
-    private fun setTtl(key: String, ttl: Duration): Mono<Boolean> {
-        return redisTemplate
-            .expire(key, ttl)
-            .doOnNext { log.info("set TTL $ttl on key $key") }
-            .doOnError { log.warn("failed to set TTL on key $key") }
-            .retry(ttlRetries)
+    private fun sinkConnectionTtl(connectionId: String) {
+        connectionTtlSink.emitNext(connectionId) { _, emitResult ->
+            if (emitResult.isFailure) {
+                log.warn("failed to put connectionId $connectionId into sink")
+            }
+            false
+        }
+    }
+
+    private fun sinkConnectionGroupTtl(connectionGroupId: String) {
+        connectionGroupTtlSink.emitNext(connectionGroupId) { _, emitResult ->
+            if (emitResult.isFailure) {
+                log.warn("failed to put connectionGroupId $connectionGroupId into sink")
+            }
+            false
+        }
     }
 
     private fun setConnectionTtl(connectionId: String): Mono<Boolean> {
@@ -60,6 +95,14 @@ class RedisRepository(
 
     private fun setConnectionGroupTtl(groupId: String): Mono<Boolean> {
         return setTtl(connectionGroupKeyPrefix + groupId, redisConfig.connectionGroupTtl)
+    }
+
+    private fun setTtl(key: String, ttl: Duration): Mono<Boolean> {
+        return redisTemplate
+            .expire(key, ttl)
+            .doOnNext { log.info("set TTL $ttl on key $key") }
+            .doOnError { log.warn("failed to set TTL on key $key") }
+            .retry(ttlRetries)
     }
 
     fun removeConnection(event: RemoveConnectionEvent): Mono<Boolean> {
@@ -91,11 +134,12 @@ class RedisRepository(
             .members(connectionGroupKeyPrefix + groupId)
             .doOnNext { log.info("retrieved connection group connection $it") }
             .doOnError { log.error("error while fetching group connection for group $groupId") }
-            .doOnNext {
-                setConnectionGroupTtl(groupId)
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe()
-            }
+//            .doOnNext {
+//                setConnectionGroupTtl(groupId)
+//                    .subscribeOn(Schedulers.boundedElastic())
+//                    .subscribe()
+//            }
+            .doOnNext { sinkConnectionGroupTtl(groupId) }
     }
 
     private fun fetchConnection(connectionId: String): Mono<StoreConnectionEvent> {
@@ -104,11 +148,12 @@ class RedisRepository(
             .get(connectionKeyPrefix + connectionId)
             .doOnNext { log.info("retrieved connection $it") }
             .doOnError { log.error("error while fetching connection $connectionId") }
-            .doOnNext {
-                setConnectionTtl(connectionId)
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe()
-            }
+//            .doOnNext {
+//                setConnectionTtl(connectionId)
+//                    .subscribeOn(Schedulers.boundedElastic())
+//                    .subscribe()
+//            }
+            .doOnNext { sinkConnectionTtl(connectionId) }
             .map { objectMapper.readValue(it, StoreConnectionEvent::class.java) }
             .doOnError(JsonProcessingException::class.java) {
                 log.error("error while converting String to StoreConnectionEvent", it)

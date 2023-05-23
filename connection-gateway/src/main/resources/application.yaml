@@ -8,14 +8,11 @@ ktor:
       - edu.ApplicationKt.module
 
 kafka:
-
   bootstrap.servers: "localhost:9092"
-
   max.poll.interval.ms: 5000
 
   # leader confirms is enough
   acks: 1
-
   group.id: "connection-gateway"
 
 kafka_topics:
