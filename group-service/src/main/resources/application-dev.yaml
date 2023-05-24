@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test
+    hikari:
+      username: postgres
+      password: changeme
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+
+logging:
+  level:
+    root: debug
+    sql: debug

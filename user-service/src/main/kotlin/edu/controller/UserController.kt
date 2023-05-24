@@ -21,8 +21,8 @@ class UserController(
 
     @GetMapping("/{id}")
     suspend fun getUser(@PathVariable id: String): ResponseEntity<UserDto> {
-        val userDto = userService.findById(id)
-        return ResponseEntity.ok(userDto)
+        val user = userService.findById(id)
+        return ResponseEntity.ok(user)
     }
 
     @PatchMapping("/{id}")
@@ -30,8 +30,8 @@ class UserController(
         @PathVariable id: String,
         @RequestBody updateDto: UserUpdateDto
     ): ResponseEntity<UserDto> {
-        val userDto = userService.patch(id, updateDto)
-        return ResponseEntity.ok(userDto)
+        val user = userService.patch(id, updateDto)
+        return ResponseEntity.ok(user)
     }
 
     @DeleteMapping("/{id}")
