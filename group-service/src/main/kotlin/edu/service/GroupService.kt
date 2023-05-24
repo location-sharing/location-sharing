@@ -4,9 +4,7 @@ import edu.dto.GroupCreateDto
 import edu.dto.GroupDto
 import edu.dto.GroupUpdateDto
 import edu.mapper.GroupMapper
-import edu.repository.ResourceNotFoundException
 import edu.repository.GroupRepository
-import edu.util.logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
@@ -31,8 +29,6 @@ class GroupService(
     }
 
     suspend fun create(createDto: GroupCreateDto): GroupDto {
-        // TODO: hash password and stuff
-
         val user = GroupMapper.from(createDto)
 
         return withContext(Dispatchers.IO) {
