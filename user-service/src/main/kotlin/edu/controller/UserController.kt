@@ -2,6 +2,7 @@ package edu.controller
 
 import edu.dto.UserCreateDto
 import edu.dto.UserDto
+import edu.dto.UserUpdateDto
 import edu.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -22,5 +23,19 @@ class UserController(
     suspend fun getUser(@PathVariable id: String): ResponseEntity<UserDto> {
         val userDto = userService.findById(id)
         return ResponseEntity.ok(userDto)
+    }
+
+    @PatchMapping("/{id}")
+    suspend fun updateUser(
+        @PathVariable id: String,
+        @RequestBody updateDto: UserUpdateDto
+    ): ResponseEntity<UserDto> {
+        val userDto = userService.patch(id, updateDto)
+        return ResponseEntity.ok(userDto)
+    }
+
+    @DeleteMapping("/{id}")
+    suspend fun deleteUser(@PathVariable id: String) {
+        userService.delete(id)
     }
 }

@@ -2,6 +2,7 @@ package edu.mapper
 
 import edu.dto.UserCreateDto
 import edu.dto.UserDto
+import edu.dto.UserUpdateDto
 import edu.model.User
 
 object UserMapper {
@@ -13,4 +14,5 @@ object UserMapper {
     fun from(createDto: UserCreateDto): User {
         return User(null, createDto.username, createDto.password)
     }
+
 }
