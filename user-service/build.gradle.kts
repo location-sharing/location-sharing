@@ -19,12 +19,15 @@ configurations {
 
 repositories {
     mavenCentral()
+
+    maven {
+        url = uri("https://repo.spring.io/milestone/")
+    }
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("com.github.jasync-sql:jasync-postgresql:2.1.24")
-
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    runtimeOnly("org.postgresql:postgresql")
 
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
