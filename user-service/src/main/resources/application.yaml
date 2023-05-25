@@ -1,12 +1,3 @@
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/test
-    hikari:
-      username: postgres
-      password: changeme
-
-
-logging:
-  level:
-    root: info
-    sql: debug
+  profiles:
+    active: dev

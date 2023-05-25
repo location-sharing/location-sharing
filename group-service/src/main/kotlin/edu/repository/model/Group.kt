@@ -1,4 +1,4 @@
-package edu.model
+package edu.repository.model
 
 import jakarta.persistence.*
 import java.util.*
@@ -18,21 +18,24 @@ class Group() {
 //    @Column(nullable = false, length = 255)
 //    lateinit var ownerId: String
 
-    @ManyToMany(cascade = [CascadeType.ALL])
+    @ManyToMany(
+        cascade = [CascadeType.ALL],
+        fetch = FetchType.EAGER
+    )
     @JoinTable(
         name = "GroupUsers",
-        joinColumns = [JoinColumn(name = "id")],
-        inverseJoinColumns = [JoinColumn(name = "id")]
+        joinColumns = [JoinColumn(name = "group_id")],
+        inverseJoinColumns = [JoinColumn(name = "user_id")]
     )
-    lateinit var users: Set<User>
+    lateinit var users: MutableSet<User>
 
     constructor(
-        id: UUID?,
-        username: String,
+        id: UUID? = null,
+        name: String,
 //        ownerId: String
     ) : this() {
         this.id = id
-        this.name = username
+        this.name = name
 //        this.ownerId = ownerId
     }
 }

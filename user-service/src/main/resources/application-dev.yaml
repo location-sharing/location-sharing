@@ -1,16 +1,19 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/group-service-test
+    url: jdbc:postgresql://localhost:5432/user-service-test
     hikari:
       username: postgres
       password: changeme
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
 
 
 logging:
   level:
     root: debug
     sql: debug
+
+server:
+  port: 8081

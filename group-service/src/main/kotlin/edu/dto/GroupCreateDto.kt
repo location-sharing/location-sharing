@@ -1,5 +1,5 @@
 package edu.dto
 
-class GroupCreateDto(
+data class GroupCreateDto(
     val name: String,
 )

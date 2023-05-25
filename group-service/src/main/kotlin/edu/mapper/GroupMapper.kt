@@ -2,16 +2,35 @@ package edu.mapper
 
 import edu.dto.GroupCreateDto
 import edu.dto.GroupDto
-import edu.model.Group
+import edu.dto.GroupUpdateDto
+import edu.dto.UserDto
+import edu.repository.model.Group
+import edu.repository.model.User
+import java.util.*
 
 object GroupMapper {
 
-    fun from(group: Group): GroupDto {
-        return GroupDto(group.id.toString(), group.name)
+    fun from(entity: Group): GroupDto {
+        return GroupDto(
+            entity.id.toString(),
+            entity.name
+        )
     }
 
-    fun from(createDto: GroupCreateDto): Group {
-        return Group(null, createDto.name)
+    fun from(entities: Set<Group>): List<GroupDto> {
+        return entities.map(GroupMapper::from)
     }
 
+    fun from(dto: GroupCreateDto): Group {
+        return Group(
+            name = dto.name
+        )
+    }
+
+    fun from(id: String, dto: GroupUpdateDto): Group {
+        return Group(
+            UUID.fromString(id),
+            name = dto.name
+        )
+    }
 }
