@@ -1,4 +1,4 @@
-package edu.location.sharing.models.events
+package edu.location.sharing.models.events.connections
 
 sealed class ConnectionEvent {
     abstract val userId: String

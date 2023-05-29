@@ -1,9 +1,9 @@
 package edu.messaging.consumers
 
+import edu.location.sharing.models.events.validation.user.UserEvent
+import edu.location.sharing.models.events.validation.user.UserValidationRequestEvent
+import edu.location.sharing.models.events.validation.user.UserValidationResponseEvent
 import edu.messaging.config.KafkaConfig
-import edu.messaging.events.UserEvent
-import edu.messaging.events.UserValidationRequestEvent
-import edu.messaging.events.UserValidationResponseEvent
 import edu.messaging.producers.UserValidationResponseProducer
 import edu.service.ResourceNotFoundException
 import edu.service.UserService
@@ -25,10 +25,6 @@ class UserValidationRequestConsumer(
 ) {
 
     override val log = logger()
-
-    init {
-        super.createFlux().subscribe()
-    }
 
     override fun processFlux(flux: Flux<ConsumerRecord<String, ByteArray>>): Flux<*> {
         return flux

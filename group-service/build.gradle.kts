@@ -19,10 +19,7 @@ configurations {
 
 repositories {
     mavenCentral()
-
-    maven {
-        url = uri("https://repo.spring.io/milestone/")
-    }
+    mavenLocal()
 }
 
 dependencies {
@@ -38,6 +35,10 @@ dependencies {
 
     implementation("org.springframework.kafka:spring-kafka")
     implementation("io.projectreactor.kafka:reactor-kafka")
+
+    /********************* Inter-project dependencies *********************/
+    implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")
+    /*********************************************************************/
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

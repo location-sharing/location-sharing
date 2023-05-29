@@ -1,4 +1,4 @@
-package edu.location.sharing.models.events.headers
+package edu.location.sharing.models.events.connections.headers
 
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.header.Headers

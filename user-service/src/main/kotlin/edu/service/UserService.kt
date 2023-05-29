@@ -1,18 +1,20 @@
 package edu.service
 
-import edu.dto.UserCreateDto
-import edu.dto.UserDto
-import edu.dto.UserUpdateDto
+import edu.dto.user.UserCreateDto
+import edu.dto.user.UserDto
+import edu.dto.user.UserUpdateDto
 import edu.mapper.UserMapper
 import edu.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class UserService(
-    val userRepository: UserRepository
+    val userRepository: UserRepository,
+    val passwordEncoder: PasswordEncoder,
 ) {
     suspend fun findById(id: String): UserDto {
 
@@ -30,7 +32,10 @@ class UserService(
     suspend fun register(createDto: UserCreateDto): UserDto {
         // TODO: hash password and stuff
 
-        val user = UserMapper.from(createDto)
+        val password = passwordEncoder.encode(createDto.password)
+        val dto = UserCreateDto(createDto.username, createDto.email, password)
+
+        val user = UserMapper.from(dto)
 
         return withContext(Dispatchers.IO) {
             val savedUser = userRepository.save(user)

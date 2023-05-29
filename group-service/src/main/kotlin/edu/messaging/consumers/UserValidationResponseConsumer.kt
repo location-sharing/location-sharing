@@ -1,9 +1,9 @@
 package edu.messaging.consumers
 
+import edu.location.sharing.models.events.validation.user.AdditionalInfoKey
+import edu.location.sharing.models.events.validation.user.UserValidationPurpose
+import edu.location.sharing.models.events.validation.user.UserValidationResponseEvent
 import edu.messaging.config.KafkaConfig
-import edu.messaging.events.AdditionalInfoKey
-import edu.messaging.events.UserValidationPurpose
-import edu.messaging.events.UserValidationResponseEvent
 import edu.service.GroupService
 import edu.util.logger
 import edu.util.objectMapper
@@ -22,10 +22,6 @@ class UserValidationResponseConsumer(
 ) {
 
     override val log = logger()
-
-    init {
-        super.createFlux().subscribe()
-    }
 
     override fun processFlux(flux: Flux<ConsumerRecord<String, ByteArray>>): Flux<*> {
         return flux

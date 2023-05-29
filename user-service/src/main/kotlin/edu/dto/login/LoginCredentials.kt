@@ -1,6 +1,6 @@
-package edu.dto
+package edu.dto.login
 
-class UserCreateDto(
+data class LoginCredentials(
     val username: String,
     val password: String
 )

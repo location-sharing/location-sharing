@@ -2,8 +2,8 @@ package edu.service
 
 import edu.dto.GroupCreateDto
 import edu.dto.GroupUpdateDto
+import edu.location.sharing.models.events.validation.user.*
 import edu.mapper.GroupMapper
-import edu.messaging.events.*
 import edu.messaging.producers.UserValidationRequestProducer
 import edu.repository.GroupRepository
 import edu.repository.model.Group
@@ -71,7 +71,6 @@ class GroupService(
             throw Exception("Groups can't have more than 20 users")
         }
 
-        UserValidationRequestContainer.addPendingRequest(userId, groupId)
         val metadata = UserValidationMetadata(
             initiatorUserId = "ADMIN",
             purpose = UserValidationPurpose.GROUP_ADD_USER,

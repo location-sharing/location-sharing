@@ -7,13 +7,16 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
 
 
 logging:
   level:
     root: info
     sql: debug
+    org.springframework.security: debug
+
+jwt.secret: "random-key-from-env-var"
 
 server:
   port: 8082

@@ -1,4 +1,4 @@
-package edu.location.sharing.models.events
+package edu.location.sharing.models.events.connections
 
 data class StoreConnectionEvent(
     override val userId: String,

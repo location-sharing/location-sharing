@@ -1,7 +1,7 @@
 package edu.messaging.producers
 
+import edu.location.sharing.models.events.validation.user.UserValidationRequestEvent
 import edu.messaging.config.KafkaConfig
-import edu.messaging.events.UserValidationRequestEvent
 import edu.util.logger
 import edu.util.objectMapper
 import kotlinx.coroutines.reactor.awaitSingle

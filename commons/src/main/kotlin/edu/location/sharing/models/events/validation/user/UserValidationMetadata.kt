@@ -1,4 +1,4 @@
-package edu.messaging.events
+package edu.location.sharing.models.events.validation.user
 
 data class UserValidationMetadata(
     val initiatorUserId: String,

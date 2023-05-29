@@ -1,8 +1,8 @@
-package edu.location.sharing.models.events.headers
+package edu.location.sharing.models.events.connections.headers
 
-import edu.location.sharing.models.events.ClientMessageEvent
-import edu.location.sharing.models.events.RemoveConnectionEvent
-import edu.location.sharing.models.events.StoreConnectionEvent
+import edu.location.sharing.models.events.connections.ClientMessageEvent
+import edu.location.sharing.models.events.connections.RemoveConnectionEvent
+import edu.location.sharing.models.events.connections.StoreConnectionEvent
 
 enum class EventType(
     val id: Byte,
