@@ -1,10 +1,7 @@
 package edu.security
 
-import com.auth0.jwt.exceptions.JWTVerificationException
-import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.security.web.server.authentication.ServerAuthenticationConverter
@@ -41,14 +38,6 @@ class JwtAuthenticationConverter(
         }
 
         val token = bearerTokenList[1]
-
-//        val jwt: DecodedJWT
-//        try {
-//            jwt = jwtUtils.verify(token)
-//        } catch (e: JWTVerificationException) {
-//            throw BadCredentialsException("Invalid token")
-//        }
-//        val authenticatedUser = jwtUtils.toAuthenticatedUser(jwt)
 
         return Mono.just(
             UsernamePasswordAuthenticationToken(token, token)
