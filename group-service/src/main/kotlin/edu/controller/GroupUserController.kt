@@ -7,7 +7,6 @@ import edu.mapper.UserMapper
 import edu.service.GroupService
 import edu.service.UserGroupService
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -37,11 +36,9 @@ class GroupUserController(
     suspend fun addGroupUser(
         @PathVariable groupId: String,
         @RequestParam userId: String
-    ): ResponseEntity<GroupDto> {
-        val group = groupService.addGroupUser(groupId, userId)
-        return ResponseEntity.ok(
-            GroupMapper.from(group)
-        )
+    ): ResponseEntity<Void> {
+        groupService.addGroupUser(groupId, userId)
+        return ResponseEntity.accepted().build()
     }
 
     @DeleteMapping("/{groupId}/users")

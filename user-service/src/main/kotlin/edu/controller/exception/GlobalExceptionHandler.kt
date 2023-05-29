@@ -1,6 +1,6 @@
 package edu.controller.exception
 
-import edu.repository.ResourceNotFoundException
+import edu.service.ResourceNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice

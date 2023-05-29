@@ -1,3 +1,18 @@
 spring:
   profiles:
     active: dev
+
+  kafka:
+    # common settings for all producers and consumers
+    bootstrap-servers: localhost:9092
+
+    consumer:
+      # only consume the latest values
+      auto-offset-reset: latest
+      group-id: group-service
+
+topics:
+  validation:
+    user:
+      request: validation.user.request
+      result: validation.user.result

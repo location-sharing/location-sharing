@@ -12,8 +12,8 @@ spring:
 
 logging:
   level:
-    root: debug
+    root: info
     sql: debug
 
 server:
-  port: 8081
+  port: 8082

@@ -51,10 +51,8 @@ class RedisRepository(
     fun storeConnection(event: StoreConnectionEvent): Mono<Void> {
         return addConnection(event.connectionId, event)
             .then(setConnectionTtl(event.connectionId))
-//            .doOnNext { sinkConnectionTtl(event.connectionId) }
             .then(addConnectionToGroup(event.connectionId, event.groupId))
             .then(setConnectionGroupTtl(event.groupId))
-//            .doOnNext { sinkConnectionGroupTtl(event.groupId) }
             .then()
     }
 
@@ -134,11 +132,6 @@ class RedisRepository(
             .members(connectionGroupKeyPrefix + groupId)
             .doOnNext { log.info("retrieved connection group connection $it") }
             .doOnError { log.error("error while fetching group connection for group $groupId") }
-//            .doOnNext {
-//                setConnectionGroupTtl(groupId)
-//                    .subscribeOn(Schedulers.boundedElastic())
-//                    .subscribe()
-//            }
             .doOnNext { sinkConnectionGroupTtl(groupId) }
     }
 
@@ -148,11 +141,6 @@ class RedisRepository(
             .get(connectionKeyPrefix + connectionId)
             .doOnNext { log.info("retrieved connection $it") }
             .doOnError { log.error("error while fetching connection $connectionId") }
-//            .doOnNext {
-//                setConnectionTtl(connectionId)
-//                    .subscribeOn(Schedulers.boundedElastic())
-//                    .subscribe()
-//            }
             .doOnNext { sinkConnectionTtl(connectionId) }
             .map { objectMapper.readValue(it, StoreConnectionEvent::class.java) }
             .doOnError(JsonProcessingException::class.java) {

@@ -4,7 +4,6 @@ import edu.dto.UserCreateDto
 import edu.dto.UserDto
 import edu.dto.UserUpdateDto
 import edu.mapper.UserMapper
-import edu.repository.ResourceNotFoundException
 import edu.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

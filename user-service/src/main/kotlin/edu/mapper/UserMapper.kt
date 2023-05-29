@@ -2,7 +2,6 @@ package edu.mapper
 
 import edu.dto.UserCreateDto
 import edu.dto.UserDto
-import edu.dto.UserUpdateDto
 import edu.model.User
 
 object UserMapper {

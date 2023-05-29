@@ -3,9 +3,7 @@ package edu.mapper
 import edu.dto.GroupCreateDto
 import edu.dto.GroupDto
 import edu.dto.GroupUpdateDto
-import edu.dto.UserDto
 import edu.repository.model.Group
-import edu.repository.model.User
 import java.util.*
 
 object GroupMapper {

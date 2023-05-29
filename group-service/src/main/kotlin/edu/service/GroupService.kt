@@ -3,22 +3,20 @@ package edu.service
 import edu.dto.GroupCreateDto
 import edu.dto.GroupUpdateDto
 import edu.mapper.GroupMapper
+import edu.messaging.events.*
+import edu.messaging.producers.UserValidationRequestProducer
 import edu.repository.GroupRepository
 import edu.repository.model.Group
 import edu.repository.model.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.springframework.context.annotation.Bean
-import org.springframework.orm.hibernate5.HibernateTransactionManager
 import org.springframework.stereotype.Service
-import org.springframework.transaction.ReactiveTransactionManager
-import org.springframework.transaction.TransactionManager
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
 class GroupService(
-    val groupRepository: GroupRepository
+    val groupRepository: GroupRepository,
+    val userValidationRequestProducer: UserValidationRequestProducer
 ) {
     
     suspend fun findById(id: String): Group {
@@ -65,21 +63,35 @@ class GroupService(
         return group.users
     }
 
-    suspend fun addGroupUser(groupId: String, userId: String): Group {
+    suspend fun addGroupUser(groupId: String, userId: String) {
 
-        // TODO: send a user validation event before
         val group = findById(groupId)
 
         if (group.users.size >= 20) {
             throw Exception("Groups can't have more than 20 users")
         }
 
-        // we don't explicitly get the user and then add it to the set, we just set the id,
-        // and cascading takes care of the rest
-        val userToAdd = User()
-        userToAdd.id = UUID.fromString(userId)
-        userToAdd.name = "random-name-$userId"
+        UserValidationRequestContainer.addPendingRequest(userId, groupId)
+        val metadata = UserValidationMetadata(
+            initiatorUserId = "ADMIN",
+            purpose = UserValidationPurpose.GROUP_ADD_USER,
+            mapOf(
+                AdditionalInfoKey.GROUP_ID to groupId
+            )
+        )
+        userValidationRequestProducer.sendWithResultLogging(
+            UserValidationRequestEvent(userId, metadata)
+        )
+    }
 
+    suspend fun insertGroupUserFromEvent(groupId: String, userEvent: UserEvent): Group {
+        val group = findById(groupId)
+
+        val userToAdd = User()
+        userToAdd.id = UUID.fromString(userEvent.id)
+        userToAdd.name = userEvent.name
+
+        // only add to the set, let cascading to the rest
         group.users.add(userToAdd)
 
         return withContext(Dispatchers.IO) {
@@ -91,8 +103,7 @@ class GroupService(
 
         val group = findById(groupId)
 
-        // we don't explicitly get the user and then remove, we just remove the id,
-        // and cascading takes care of the rest
+        // only remove from the set, let cascading to the rest
         group.users.removeIf { it.id == UUID.fromString(userId) }
         withContext(Dispatchers.IO) {
             groupRepository.save(group)

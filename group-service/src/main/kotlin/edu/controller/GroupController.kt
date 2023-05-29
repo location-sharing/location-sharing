@@ -3,12 +3,9 @@ package edu.controller
 import edu.dto.GroupCreateDto
 import edu.dto.GroupDto
 import edu.dto.GroupUpdateDto
-import edu.dto.UserDto
 import edu.mapper.GroupMapper
-import edu.mapper.UserMapper
 import edu.service.GroupService
 import edu.service.UserGroupService
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
