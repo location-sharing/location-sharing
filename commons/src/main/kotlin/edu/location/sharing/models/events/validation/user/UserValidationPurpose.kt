@@ -5,7 +5,11 @@ enum class UserValidationPurpose(
 ) {
     GROUP_ADD_USER(listOf(
         AdditionalInfoKey.GROUP_ID
-    ));
+    )),
+
+    GROUP_CHANGE_OWNER(listOf(
+        AdditionalInfoKey.GROUP_ID
+    ))
 }
 
 enum class AdditionalInfoKey(

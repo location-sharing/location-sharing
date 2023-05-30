@@ -14,9 +14,8 @@ class Group() {
     @Column(unique = true, nullable = false, length = 255)
     lateinit var name: String
 
-    // userId of the owner
-//    @Column(nullable = false, length = 255)
-//    lateinit var ownerId: String
+    @Column(nullable = false, length = 255)
+    lateinit var ownerId: String
 
     @ManyToMany(
         cascade = [CascadeType.ALL],
@@ -32,10 +31,12 @@ class Group() {
     constructor(
         id: UUID? = null,
         name: String,
-//        ownerId: String
+        ownerId: String,
+        users: MutableSet<User> = mutableSetOf()
     ) : this() {
         this.id = id
         this.name = name
-//        this.ownerId = ownerId
+        this.ownerId = ownerId
+        this.users = users
     }
 }

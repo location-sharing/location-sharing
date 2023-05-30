@@ -27,7 +27,10 @@ class UserValidationResponseConsumer(
         return flux
             .map { objectMapper.readValue(it.value(), UserValidationResponseEvent::class.java) }
             .doOnError { log.warn("error while parsing UserValidationResponseEvent: $it") }
-            .filter { it.metadata.purpose == UserValidationPurpose.GROUP_ADD_USER}
+            .filter {
+                it.metadata.purpose == UserValidationPurpose.GROUP_ADD_USER ||
+                it.metadata.purpose == UserValidationPurpose.GROUP_CHANGE_OWNER
+            }
             .doOnNext {
                 if (!it.valid) {
                     // TODO: send notification about the validation status
@@ -36,12 +39,18 @@ class UserValidationResponseConsumer(
             }
             .filter { it.valid }
             .flatMap { event ->
-                mono {
-                    groupService.insertGroupUserFromEvent(
-                        event.metadata.additionalInfo[AdditionalInfoKey.GROUP_ID]!!,
-                        event.user!!
-                    )
+                val groupId = event.metadata.additionalInfo[AdditionalInfoKey.GROUP_ID]!!
+                val ownerId = event.metadata.initiatorUserId
+                val validatedUser = event.user!!
+                when(event.metadata.purpose) {
+                    UserValidationPurpose.GROUP_ADD_USER -> mono {
+                        groupService.addGroupUserFromEvent(groupId, ownerId, validatedUser)
+                    }
+                    UserValidationPurpose.GROUP_CHANGE_OWNER -> mono {
+                        groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
+                    }
                 }
+
             }
     }
 }

@@ -14,10 +14,29 @@ class UserGroupService(
     suspend fun findUserGroups(userId: String): Set<Group> {
         val uuid = UUID.fromString(userId)
         val user = withContext(Dispatchers.IO) {
-            userRepository
-                .findById(uuid)
-                .orElseThrow { ResourceNotFoundException("User with id $userId not found") }
+            userRepository.findById(uuid)
         }
-        return user.groups
+
+        return if (user.isPresent)
+            user.get().groups
+        else
+            setOf()
+    }
+
+    suspend fun findUserGroup(userId: String, groupId: String): Group {
+        val userUUID = UUID.fromString(userId)
+
+        val user = withContext(Dispatchers.IO) {
+            userRepository
+                .findById(userUUID)
+                .orElseThrow {
+                    ResourceNotFoundException("Group with id $groupId not found for user")
+                }
+        }
+
+        val groupUUID = UUID.fromString(groupId)
+
+        return user.groups.find { it.id == groupUUID }
+            ?: throw ResourceNotFoundException("Group with id $groupId not found for user")
     }
 }

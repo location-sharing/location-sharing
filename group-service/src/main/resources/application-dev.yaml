@@ -12,12 +12,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    database-platform: org.hibernate.dialect.H2Dialect
 
 logging:
   level:
     root: info
     sql: debug
+
+jwt.secret: "random-key-from-env-var"
 
 server:
   port: 8083

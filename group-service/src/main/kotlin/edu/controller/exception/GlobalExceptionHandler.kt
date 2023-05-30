@@ -1,6 +1,7 @@
 package edu.controller.exception
 
 import edu.service.ResourceNotFoundException
+import edu.service.exception.ValidationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -17,6 +18,17 @@ class GlobalExceptionHandler {
         )
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
+            .body(webException)
+    }
+
+    @ExceptionHandler(ValidationException::class)
+    fun handle(e: ValidationException): ResponseEntity<WebException> {
+        val webException = WebException(
+            "Validation error",
+            e.message
+        )
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(webException)
     }
 

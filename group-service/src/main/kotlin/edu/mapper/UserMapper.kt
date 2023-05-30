@@ -1,7 +1,9 @@
 package edu.mapper
 
 import edu.dto.UserDto
+import edu.location.sharing.models.events.validation.user.UserEvent
 import edu.repository.model.User
+import java.util.*
 
 object UserMapper {
 
@@ -14,5 +16,12 @@ object UserMapper {
 
     fun from(entities: Set<User>): List<UserDto> {
         return entities.map(UserMapper::from)
+    }
+
+    fun from(userEvent: UserEvent): User {
+        return User(
+            UUID.fromString(userEvent.id),
+            userEvent.name
+        )
     }
 }

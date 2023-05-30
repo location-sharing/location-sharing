@@ -1,12 +1,12 @@
 package edu.controller
 
-import edu.dto.GroupCreateDto
-import edu.dto.GroupDto
-import edu.dto.GroupUpdateDto
+import edu.dto.*
 import edu.mapper.GroupMapper
+import edu.security.filters.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -16,52 +16,86 @@ class GroupController(
     val userGroupService: UserGroupService,
 ) {
 
-    @PostMapping
-    suspend fun postGroup(@RequestBody createGroup: GroupCreateDto): ResponseEntity<GroupDto> {
-        val group = groupService.create(createGroup)
+    @GetMapping
+    suspend fun getUserGroups(
+        @AuthenticationPrincipal user: AuthenticatedUser
+    ): ResponseEntity<List<GroupDto>> {
+        val groups = userGroupService.findUserGroups(user.id)
         return ResponseEntity.ok(
-            GroupMapper.from(group)
+            GroupMapper.toDtoList(groups)
         )
     }
 
     @GetMapping("/{id}")
-    suspend fun getGroup(@PathVariable id: String): ResponseEntity<GroupDto> {
-        val group = groupService.findById(id)
+    suspend fun getUserGroup(
+        @PathVariable id: String,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<GroupDetailDto> {
+        val group = userGroupService.findUserGroup(user.id, id)
         return ResponseEntity.ok(
-            GroupMapper.from(group)
+            GroupMapper.toDetailDto(group)
+        )
+    }
+
+    @PostMapping
+    suspend fun postGroup(
+        @RequestBody createGroup: GroupCreateDto,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<GroupDetailDto> {
+        val group = groupService.create(createGroup, user.id)
+        return ResponseEntity.ok(
+            GroupMapper.toDetailDto(group)
         )
     }
 
     @PatchMapping("/{id}")
     suspend fun updateGroup(
         @PathVariable id: String,
-        @RequestBody updateDto: GroupUpdateDto
-    ): ResponseEntity<GroupDto> {
-        val group = groupService.patch(id, updateDto)
+        @RequestBody updateDto: GroupUpdateDto,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<GroupDetailDto> {
+        val group = groupService.patch(id, updateDto, user.id)
         return ResponseEntity.ok(
-            GroupMapper.from(group)
+            GroupMapper.toDetailDto(group)
         )
     }
 
     @DeleteMapping("/{id}")
-    suspend fun deleteGroup(@PathVariable id: String): ResponseEntity<Nothing> {
-        groupService.delete(id)
+    suspend fun deleteGroup(
+        @PathVariable id: String,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<Void> {
+        groupService.delete(id, user.id)
         return ResponseEntity.noContent().build()
     }
 
-//    @GetMapping("/{id}/users")
-//    suspend fun getGroupUsers(@PathVariable id: String): ResponseEntity<List<UserDto>> {
-//        val users = groupService.getGroupUsers(id)
-//        return ResponseEntity.ok(
-//            UserMapper.from(users)
-//        )
-//    }
-//
-//    @GetMapping
-//    suspend fun getUserGroups(@RequestParam userId: String): ResponseEntity<List<GroupDto>> {
-//        val groups = userGroupService.findUserGroups(userId)
-//        return ResponseEntity.ok(
-//            GroupMapper.from(groups)
-//        )
-//    }
+    @PostMapping("/{groupId}/users")
+    suspend fun addGroupUser(
+        @PathVariable groupId: String,
+        @RequestParam userId: String,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<Void> {
+        groupService.addGroupUser(groupId, user.id, userId)
+        return ResponseEntity.accepted().build()
+    }
+
+    @DeleteMapping("/{groupId}/users")
+    suspend fun removeGroupUser(
+        @PathVariable groupId: String,
+        @RequestParam userId: String,
+        @AuthenticationPrincipal user: AuthenticatedUser,
+    ): ResponseEntity<Void> {
+        groupService.removeGroupUser(groupId, user.id, userId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PostMapping("/{id}")
+    suspend fun changeOwner(
+        @PathVariable id: String,
+        @RequestParam userId: String,
+        @AuthenticationPrincipal user: AuthenticatedUser
+    ): ResponseEntity<Void> {
+        groupService.changeOwner(id, user.id, userId)
+        return ResponseEntity.accepted().build()
+    }
 }

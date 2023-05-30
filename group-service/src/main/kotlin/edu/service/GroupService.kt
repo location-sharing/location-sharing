@@ -4,10 +4,12 @@ import edu.dto.GroupCreateDto
 import edu.dto.GroupUpdateDto
 import edu.location.sharing.models.events.validation.user.*
 import edu.mapper.GroupMapper
+import edu.mapper.UserMapper
 import edu.messaging.producers.UserValidationRequestProducer
 import edu.repository.GroupRepository
 import edu.repository.model.Group
 import edu.repository.model.User
+import edu.service.exception.ValidationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
@@ -18,61 +20,45 @@ class GroupService(
     val groupRepository: GroupRepository,
     val userValidationRequestProducer: UserValidationRequestProducer
 ) {
-    
-    suspend fun findById(id: String): Group {
 
-        val uuid = UUID.fromString(id)
-
-        return withContext(Dispatchers.IO) {
-            groupRepository
-                .findById(uuid)
-                .orElseThrow { ResourceNotFoundException("Group with id $id not found") }
+    suspend fun create(dto: GroupCreateDto, ownerId: String): Group {
+        val entity = GroupMapper.toEntity(dto, ownerId)
+        val group = withContext(Dispatchers.IO) {
+            groupRepository.save(entity)
         }
+
+        // add the owner of the group as a member (with the same flow as adding normal users)
+        addGroupUser(group.id.toString(), ownerId = ownerId, userId = ownerId)
+        return group
     }
 
-    suspend fun create(dto: GroupCreateDto): Group {
-        val entity = GroupMapper.from(dto)
+    suspend fun patch(id: String, dto: GroupUpdateDto, ownerId: String): Group {
+        verifyGroupExists(id, ownerId)
+        val entity = GroupMapper.toEntity(id, dto, ownerId)
         return withContext(Dispatchers.IO) {
             groupRepository.save(entity)
         }
     }
 
-    suspend fun patch(id: String, dto: GroupUpdateDto): Group {
-        val entity = GroupMapper.from(id, dto)
-
-        withContext(Dispatchers.IO) {
-            if (!groupRepository.existsById(entity.id!!)) {
-                throw ResourceNotFoundException("Group with id $id not found")
-            }
-        }
-
-        return withContext(Dispatchers.IO) {
-            groupRepository.save(entity)
-        }
-    }
-
-    suspend fun delete(id: String) {
+    suspend fun delete(id: String, ownerId: String) {
         val uuid = UUID.fromString(id)
         withContext(Dispatchers.IO) {
-            groupRepository.deleteById(uuid)
+            groupRepository.deleteByIdAndOwnerId(uuid, ownerId)
         }
     }
 
-    suspend fun getGroupUsers(groupId: String): Set<User> {
-        val group = findById(groupId)
-        return group.users
-    }
-
-    suspend fun addGroupUser(groupId: String, userId: String) {
-
-        val group = findById(groupId)
+    /**
+     * Sends out a validation event to fetch data about the user we're trying to add
+     */
+    suspend fun addGroupUser(groupId: String, ownerId: String, userId: String) {
+        val group = findByIdAndOwner(groupId, ownerId)
 
         if (group.users.size >= 20) {
-            throw Exception("Groups can't have more than 20 users")
+            throw ValidationException("Groups can't have more than 20 users")
         }
 
         val metadata = UserValidationMetadata(
-            initiatorUserId = "ADMIN",
+            initiatorUserId = ownerId,
             purpose = UserValidationPurpose.GROUP_ADD_USER,
             mapOf(
                 AdditionalInfoKey.GROUP_ID to groupId
@@ -83,14 +69,15 @@ class GroupService(
         )
     }
 
-    suspend fun insertGroupUserFromEvent(groupId: String, userEvent: UserEvent): Group {
-        val group = findById(groupId)
+    /**
+     * Gets invoked once a user validation request comes in
+     */
+    suspend fun addGroupUserFromEvent(groupId: String, ownerId: String, userEvent: UserEvent): Group {
+        val group = findByIdAndOwner(groupId, ownerId)
 
-        val userToAdd = User()
-        userToAdd.id = UUID.fromString(userEvent.id)
-        userToAdd.name = userEvent.name
+        val userToAdd = UserMapper.from(userEvent)
 
-        // only add to the set, let cascading to the rest
+        // only add to the set, let cascading do the rest
         group.users.add(userToAdd)
 
         return withContext(Dispatchers.IO) {
@@ -98,14 +85,72 @@ class GroupService(
         }
     }
 
-    suspend fun removeGroupUser(groupId: String, userId: String) {
+    suspend fun removeGroupUser(groupId: String, ownerId: String, userId: String) {
+        // TODO: allow to remove yourself from a group
+        val group = findByIdAndOwner(groupId, ownerId)
 
-        val group = findById(groupId)
+        if (group.ownerId == userId) {
+            throw ValidationException("You can't remove the owner of the group")
+        }
 
-        // only remove from the set, let cascading to the rest
+        // only remove from the set, let cascading do the rest
         group.users.removeIf { it.id == UUID.fromString(userId) }
         withContext(Dispatchers.IO) {
             groupRepository.save(group)
+        }
+    }
+
+    suspend fun changeOwner(groupId: String, currentOwnerId: String, newOwnerId: String) {
+        if (currentOwnerId == newOwnerId) {
+            return
+        }
+        verifyGroupExists(groupId, currentOwnerId)
+        val metadata = UserValidationMetadata(
+            initiatorUserId = currentOwnerId,
+            purpose = UserValidationPurpose.GROUP_CHANGE_OWNER,
+            mapOf(
+                AdditionalInfoKey.GROUP_ID to groupId
+            )
+        )
+        userValidationRequestProducer.sendWithResultLogging(
+            UserValidationRequestEvent(newOwnerId, metadata)
+        )
+    }
+
+    /**
+     * Gets invoked once a user validation request comes in
+     */
+    suspend fun changeOwnerFromEvent(groupId: String, currentOwnerId: String, userEvent: UserEvent) {
+        val group = findByIdAndOwner(groupId, currentOwnerId)
+
+        group.ownerId = userEvent.id
+
+        // if the new owner is not in the group, add it
+        val newOwnerUUID = UUID.fromString(userEvent.id)
+        if (group.users.find { it.id == newOwnerUUID } == null) {
+            group.users.add(UserMapper.from(userEvent))
+        }
+
+        return withContext(Dispatchers.IO) {
+            groupRepository.save(group)
+        }
+    }
+
+    private suspend fun findByIdAndOwner(id: String, ownerId: String): Group {
+        val groupUUID = UUID.fromString(id)
+
+        return withContext(Dispatchers.IO) {
+            groupRepository
+                .findByIdAndOwnerId(groupUUID, ownerId)
+                .orElseThrow { ResourceNotFoundException("Group with id $id not found for user $ownerId") }
+        }
+    }
+
+    private suspend fun verifyGroupExists(groupId: String, ownerId: String) {
+        withContext(Dispatchers.IO) {
+            if (!groupRepository.existsByIdAndOwnerId(UUID.fromString(groupId), ownerId)) {
+                throw ResourceNotFoundException("Group with id $groupId not found for user $ownerId")
+            }
         }
     }
 }

@@ -36,6 +36,9 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("io.projectreactor.kafka:reactor-kafka")
 
+    implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("com.auth0:java-jwt:4.3.0")
+
     /********************* Inter-project dependencies *********************/
     implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")
     /*********************************************************************/
