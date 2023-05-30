@@ -1,5 +1,8 @@
 package edu.security
 
+import edu.security.filters.JwtAuthenticationConverter
+import edu.security.filters.JwtAuthenticationFailureHandler
+import edu.security.filters.JwtAuthenticationManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod

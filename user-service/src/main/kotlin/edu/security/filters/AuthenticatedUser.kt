@@ -1,4 +1,4 @@
-package edu.security
+package edu.security.filters
 
 data class AuthenticatedUser(
     val id: String,

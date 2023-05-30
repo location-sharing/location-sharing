@@ -1,4 +1,4 @@
-package edu.security
+package edu.security.filters
 
 import org.springframework.http.HttpHeaders
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException

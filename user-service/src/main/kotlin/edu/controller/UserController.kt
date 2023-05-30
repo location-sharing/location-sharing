@@ -5,10 +5,13 @@ import edu.dto.user.UserCreateDto
 import edu.dto.user.UserDto
 import edu.dto.user.UserUpdateDto
 import edu.security.AuthenticationService
+import edu.security.filters.AuthenticatedUser
 import edu.service.UserService
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.service.annotation.HttpExchange
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,23 +35,26 @@ class UserController(
             .build()
     }
 
-    @GetMapping("/{id}")
-    suspend fun getUser(@PathVariable id: String): ResponseEntity<UserDto> {
-        val user = userService.findById(id)
-        return ResponseEntity.ok(user)
-    }
-
-    @PatchMapping("/{id}")
-    suspend fun updateUser(
-        @PathVariable id: String,
-        @RequestBody updateDto: UserUpdateDto
+    @GetMapping
+    suspend fun getUser(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser
     ): ResponseEntity<UserDto> {
-        val user = userService.patch(id, updateDto)
+        val user = userService.findById(authenticatedUser.id)
         return ResponseEntity.ok(user)
     }
 
-    @DeleteMapping("/{id}")
-    suspend fun deleteUser(@PathVariable id: String) {
-        userService.delete(id)
+    @PatchMapping
+    suspend fun updateUser(
+        @RequestBody updateDto: UserUpdateDto,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser
+    ): ResponseEntity<UserDto> {
+        val user = userService.patch(authenticatedUser.id, updateDto)
+        return ResponseEntity.ok(user)
+    }
+
+    @DeleteMapping
+    suspend fun deleteUser(@AuthenticationPrincipal authenticatedUser: AuthenticatedUser): ResponseEntity<Void> {
+        userService.delete(authenticatedUser.id)
+        return ResponseEntity.noContent().build()
     }
 }

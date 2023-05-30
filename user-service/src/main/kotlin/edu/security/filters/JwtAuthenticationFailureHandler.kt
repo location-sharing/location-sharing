@@ -1,4 +1,4 @@
-package edu.security
+package edu.security.filters
 
 import edu.util.objectMapper
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
@@ -12,6 +12,11 @@ import reactor.core.publisher.Mono
 
 @Component
 class JwtAuthenticationFailureHandler : ServerAuthenticationFailureHandler{
+
+    data class AuthException(
+        val title: String = "Authentication failed",
+        val detail: String
+    )
 
     override fun onAuthenticationFailure(filterExchange: WebFilterExchange?, ex: AuthenticationException?): Mono<Void> {
 

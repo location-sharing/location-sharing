@@ -3,7 +3,6 @@ package edu.controller.exception
 import edu.service.ResourceNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 
@@ -21,10 +20,10 @@ class GlobalExceptionHandler {
             .body(webException)
     }
 
-    @ExceptionHandler(BadCredentialsException::class)
-    fun handle(e: BadCredentialsException): ResponseEntity<WebException> {
+    @ExceptionHandler(UnauthorizedException::class)
+    fun handle(e: UnauthorizedException): ResponseEntity<WebException> {
         val webException = WebException(
-            "Bad credentials",
+            "Unauthorized",
             e.message
         )
         return ResponseEntity

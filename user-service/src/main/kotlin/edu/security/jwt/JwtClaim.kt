@@ -1,4 +1,4 @@
-package edu.security
+package edu.security.jwt
 
 enum class JwtClaim(
     val keyName: String,
