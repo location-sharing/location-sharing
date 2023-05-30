@@ -14,6 +14,7 @@ import org.springframework.security.web.server.authentication.AuthenticationWebF
 class SecurityConfig(
     val jwtAuthManager: JwtAuthenticationManager,
     val jwtAuthConverter: JwtAuthenticationConverter,
+    val jwtAuthFailureHandler: JwtAuthenticationFailureHandler,
 ) {
 
     @Bean
@@ -23,6 +24,7 @@ class SecurityConfig(
         // and tries to authenticate the user with the JWT in it
         val jwtAuthFilter = AuthenticationWebFilter(jwtAuthManager)
         jwtAuthFilter.setServerAuthenticationConverter(jwtAuthConverter)
+        jwtAuthFilter.setAuthenticationFailureHandler(jwtAuthFailureHandler)
 
         return http
             .csrf { it.disable() }

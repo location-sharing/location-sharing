@@ -13,9 +13,7 @@ import reactor.core.publisher.Mono
  * Extracts authentication credentials (JWT) from a request
  */
 @Component
-class JwtAuthenticationConverter(
-    private val jwtUtils: JwtUtils
-): ServerAuthenticationConverter {
+class JwtAuthenticationConverter : ServerAuthenticationConverter {
 
     override fun convert(exchange: ServerWebExchange?): Mono<Authentication> {
 

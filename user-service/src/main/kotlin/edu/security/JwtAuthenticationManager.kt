@@ -1,6 +1,7 @@
 package edu.security
 
 import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.ReactiveAuthenticationManager
@@ -26,6 +27,8 @@ class JwtAuthenticationManager(
         val jwt: DecodedJWT
         try {
             jwt = jwtUtils.verify(authentication.name)
+        } catch (e: TokenExpiredException) {
+            throw BadCredentialsException("${e.message}")
         } catch (e: JWTVerificationException) {
             throw BadCredentialsException("Invalid token")
         }
