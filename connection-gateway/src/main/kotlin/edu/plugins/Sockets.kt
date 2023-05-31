@@ -1,6 +1,7 @@
 package edu.plugins
 
 import edu.models.Message
+import edu.security.JwtConfig
 import edu.service.ConnectionService.removeConnection
 import edu.service.ConnectionService.sendRemoveConnectionEvent
 import edu.service.ConnectionService.sendStoreConnectionEvent
@@ -8,6 +9,8 @@ import edu.service.ConnectionService.storeConnection
 import edu.service.MessageEventService.sendClientMessageEvent
 import edu.util.objectMapper
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
@@ -26,44 +29,59 @@ fun Application.configureSockets() {
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }
+
     routing {
 
-        webSocket("/location") {
+        authenticate(JwtConfig.JWT_AUTH_NAME) {
 
-            // TODO: verify JWT, use it to send StoreConnectionEvent?
+            // TODO: get principal from JWT, convert it to AuthenticatedUser
+            // TODO: store AuthenticatedUser somewhere
+            // TODO: in websockets, send a StoreConnectionEvent on first connection
+            // TODO: block further execution until a response comes back which validates that the connection has been stored
+            // TODO:
 
-            // for now use the first frame to set the connection
 
-            val firstMessage: Message
-            try {
-                firstMessage = parseFirstMessage()
-            } catch (e: InvalidFrameFormatException) {
-                close(CloseReason(
-                    CloseReason.Codes.INTERNAL_ERROR, "frame parse error, probably invalid message format")
-                )
-                return@webSocket
-            }
+            webSocket("/location") {
+//
+//                val principal = call.principal<JWTPrincipal>()
+//                principal.payload.getClaim()
 
-            val connectionId = storeConnection(this)
-            LOG.info("user ${firstMessage.userId} connected, connection stored with id $connectionId")
+                // TODO: verify JWT, use it to send StoreConnectionEvent?
 
-            sendStoreConnectionEvent(connectionId, firstMessage)
-            sendClientMessageEvent(connectionId, firstMessage)
+                // for now use the first frame to set the connection
 
-            // TODO: send response after connection has been stored by the session service?
+                val firstMessage: Message
+                try {
+                    firstMessage = parseFirstMessage()
+                } catch (e: InvalidFrameFormatException) {
+                    close(CloseReason(
+                        CloseReason.Codes.INTERNAL_ERROR, "frame parse error, probably invalid message format")
+                    )
+                    return@webSocket
+                }
 
-            try {
-               processMessages(connectionId)
-            } catch (e: ClosedReceiveChannelException) {
-                LOG.info("connection with id $connectionId closed")
-            } catch (e: Exception) {
-                LOG.warn("connection with id $connectionId closed with exception: $e")
-            } finally {
-                sendRemoveConnectionEvent(connectionId, firstMessage)
-                removeConnection(connectionId)
-                LOG.info("removed connection with id $connectionId")
+                val connectionId = storeConnection(this)
+                LOG.info("user ${firstMessage.userId} connected, connection stored with id $connectionId")
+
+                sendStoreConnectionEvent(connectionId, firstMessage)
+                sendClientMessageEvent(connectionId, firstMessage)
+
+                // TODO: send response after connection has been stored by the session service?
+
+                try {
+                    processMessages(connectionId)
+                } catch (e: ClosedReceiveChannelException) {
+                    LOG.info("connection with id $connectionId closed")
+                } catch (e: Exception) {
+                    LOG.warn("connection with id $connectionId closed with exception: $e")
+                } finally {
+                    sendRemoveConnectionEvent(connectionId, firstMessage)
+                    removeConnection(connectionId)
+                    LOG.info("removed connection with id $connectionId")
+                }
             }
         }
+
     }
 }
 

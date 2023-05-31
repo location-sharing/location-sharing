@@ -48,7 +48,6 @@ abstract class GenericConsumer(
     }
 
     fun createFlux(): Flux<*> {
-        // retry on any error
         return processFlux(doCreateFlux())
             .retry()
     }
