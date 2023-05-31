@@ -1,8 +1,8 @@
-package edu.api.consumers
+package edu.messaging.consumers
 
 import edu.config.KafkaConfig
-import edu.location.sharing.models.events.headers.EventType
-import edu.location.sharing.models.events.headers.EventTypeKafkaHeader
+import edu.location.sharing.models.events.connections.headers.EventType
+import edu.location.sharing.models.events.connections.headers.EventTypeKafkaHeader
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.slf4j.Logger

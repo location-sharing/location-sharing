@@ -5,11 +5,10 @@ import edu.dto.GroupDetailDto
 import edu.dto.GroupDto
 import edu.dto.GroupUpdateDto
 import edu.repository.model.Group
-import java.util.*
 
 object GroupMapper {
 
-    fun toEntity(entity: Group): GroupDto {
+    fun toDto(entity: Group): GroupDto {
         return GroupDto(
             entity.id.toString(),
             entity.name,
@@ -27,7 +26,7 @@ object GroupMapper {
     }
 
     fun toDtoList(entities: Set<Group>): List<GroupDto> {
-        return entities.map(GroupMapper::toEntity)
+        return entities.map(GroupMapper::toDto)
     }
 
     fun toEntity(dto: GroupCreateDto, ownerId: String): Group {
@@ -37,11 +36,12 @@ object GroupMapper {
         )
     }
 
-    fun toEntity(id: String, dto: GroupUpdateDto, ownerId: String): Group {
+    fun patchEntity(group: Group, dto: GroupUpdateDto): Group {
         return Group(
-            UUID.fromString(id),
+            group.id,
             dto.name,
-            ownerId
+            group.ownerId,
+            group.users
         )
     }
 }

@@ -1,4 +1,4 @@
-package edu.api.consumers
+package edu.messaging.consumers
 
 import org.springframework.stereotype.Service
 

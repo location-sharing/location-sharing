@@ -1,10 +1,15 @@
 package edu.controller
 
-import edu.dto.*
+import edu.dto.GroupCreateDto
+import edu.dto.GroupDetailDto
+import edu.dto.GroupDto
+import edu.dto.GroupUpdateDto
 import edu.mapper.GroupMapper
 import edu.security.filters.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
@@ -53,10 +58,10 @@ class GroupController(
         @PathVariable id: String,
         @RequestBody updateDto: GroupUpdateDto,
         @AuthenticationPrincipal user: AuthenticatedUser,
-    ): ResponseEntity<GroupDetailDto> {
+    ): ResponseEntity<GroupDto> {
         val group = groupService.patch(id, updateDto, user.id)
         return ResponseEntity.ok(
-            GroupMapper.toDetailDto(group)
+            GroupMapper.toDto(group)
         )
     }
 
@@ -65,7 +70,11 @@ class GroupController(
         @PathVariable id: String,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ): ResponseEntity<Void> {
-        groupService.delete(id, user.id)
+        // switch to IO threads here because this has to be a transaction
+        // run on the same thread all the way to the end
+        withContext(Dispatchers.IO) {
+            groupService.delete(id, user.id)
+        }
         return ResponseEntity.noContent().build()
     }
 

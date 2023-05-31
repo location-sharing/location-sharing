@@ -9,7 +9,7 @@ spring:
     consumer:
       # only consume the latest values
       auto-offset-reset: latest
-      group-id: group-service
+      group-id: user-service
 
 topics:
   validation:

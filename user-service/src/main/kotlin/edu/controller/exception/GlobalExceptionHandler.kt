@@ -37,6 +37,7 @@ class GlobalExceptionHandler {
             "Exception",
             e.message
         )
+        e.printStackTrace()
         return ResponseEntity
             .status(500)
             .body(webException)

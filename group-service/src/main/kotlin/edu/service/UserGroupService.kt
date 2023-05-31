@@ -30,13 +30,17 @@ class UserGroupService(
             userRepository
                 .findById(userUUID)
                 .orElseThrow {
-                    ResourceNotFoundException("Group with id $groupId not found for user")
+                    ResourceNotFoundException(
+                        "Group with id $groupId not found. Make sure you are a member of this group."
+                    )
                 }
         }
 
         val groupUUID = UUID.fromString(groupId)
 
         return user.groups.find { it.id == groupUUID }
-            ?: throw ResourceNotFoundException("Group with id $groupId not found for user")
+            ?: throw ResourceNotFoundException(
+                "Group with id $groupId not found. Make sure you are a member of this group."
+            )
     }
 }

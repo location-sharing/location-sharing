@@ -1,5 +1,6 @@
 package edu.controller
 
+import edu.controller.exception.UnauthorizedException
 import edu.dto.login.LoginCredentials
 import edu.dto.user.UserCreateDto
 import edu.dto.user.UserDto
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.service.annotation.HttpExchange
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 class UserController(
     val userService: UserService,
     val authService: AuthenticationService,

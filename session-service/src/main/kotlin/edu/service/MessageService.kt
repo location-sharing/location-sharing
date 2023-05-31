@@ -1,6 +1,6 @@
 package edu.service
 
-import edu.api.producers.ClientMessageProducer
+import edu.messaging.producers.ClientMessageProducer
 import edu.location.sharing.models.events.ClientMessageEvent
 import edu.location.sharing.util.logger
 import edu.repository.RedisRepository

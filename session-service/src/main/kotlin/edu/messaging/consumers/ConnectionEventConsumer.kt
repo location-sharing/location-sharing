@@ -1,9 +1,9 @@
-package edu.api.consumers
+package edu.messaging.consumers
 
 import edu.config.KafkaConfig
-import edu.location.sharing.models.events.RemoveConnectionEvent
-import edu.location.sharing.models.events.StoreConnectionEvent
-import edu.location.sharing.models.events.headers.EventType
+import edu.location.sharing.models.events.connections.RemoveConnectionEvent
+import edu.location.sharing.models.events.connections.StoreConnectionEvent
+import edu.location.sharing.models.events.connections.headers.EventType
 import edu.location.sharing.util.logger
 import edu.service.ConnectionService
 import edu.util.objectMapper

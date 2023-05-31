@@ -1,4 +1,4 @@
-package edu.api.producers
+package edu.messaging.producers
 
 import edu.config.KafkaConfig
 import edu.location.sharing.models.events.ClientMessageEvent

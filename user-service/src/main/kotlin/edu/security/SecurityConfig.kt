@@ -36,7 +36,7 @@ class SecurityConfig(
             .logout { it.disable() }
             .authorizeExchange {
                 it
-                    .pathMatchers(HttpMethod.POST, "/api/users", "/api/users/authenticate").permitAll()
+                    .pathMatchers(HttpMethod.POST, "/api/user", "/api/user/authenticate").permitAll()
                     .anyExchange().authenticated()
             }
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)

@@ -30,7 +30,6 @@ class UserService(
     }
 
     suspend fun register(createDto: UserCreateDto): UserDto {
-        // TODO: hash password and stuff
 
         val password = passwordEncoder.encode(createDto.password)
         val dto = UserCreateDto(createDto.username, createDto.email, password)

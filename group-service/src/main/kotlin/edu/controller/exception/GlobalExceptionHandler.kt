@@ -32,14 +32,26 @@ class GlobalExceptionHandler {
             .body(webException)
     }
 
+    @ExceptionHandler(ForbiddenException::class)
+    fun handle(e: ForbiddenException): ResponseEntity<WebException> {
+        val webException = WebException(
+            "Forbidden",
+            e.message
+        )
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(webException)
+    }
+
     @ExceptionHandler(Exception::class)
     fun handle(e: Exception): ResponseEntity<WebException> {
         val webException = WebException(
             "Exception",
             e.message
         )
+        e.printStackTrace()
         return ResponseEntity
-            .status(500)
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(webException)
     }
 }

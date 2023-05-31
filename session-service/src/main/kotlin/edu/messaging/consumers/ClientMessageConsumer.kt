@@ -1,10 +1,9 @@
-package edu.api.consumers
+package edu.messaging.consumers
 
 import edu.config.KafkaConfig
 import edu.location.sharing.models.events.ClientMessageEvent
 import edu.location.sharing.models.events.headers.EventType
 import edu.location.sharing.util.logger
-import edu.service.ConnectionService
 import edu.service.MessageService
 import edu.util.objectMapper
 import org.springframework.stereotype.Component

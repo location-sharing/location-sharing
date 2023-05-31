@@ -11,6 +11,4 @@ interface GroupRepository: CrudRepository<Group, UUID> {
     fun findByIdAndOwnerId(id: UUID, ownerId: String): Optional<Group>
 
     fun existsByIdAndOwnerId(id: UUID, ownerId: String): Boolean
-
-    fun deleteByIdAndOwnerId(id: UUID, ownerId: String)
 }

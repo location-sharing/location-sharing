@@ -50,7 +50,6 @@ class UserValidationResponseConsumer(
                         groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
                     }
                 }
-
             }
     }
 }

@@ -16,3 +16,6 @@ topics:
     user:
       request: validation.user.request
       result: validation.user.result
+
+max_groups_per_user: 20
+max_users_per_group: 30

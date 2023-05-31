@@ -11,7 +11,7 @@ class Group() {
     @GeneratedValue(strategy = GenerationType.UUID)
     var id: UUID? = null
 
-    @Column(unique = true, nullable = false, length = 255)
+    @Column(nullable = false, length = 255)
     lateinit var name: String
 
     @Column(nullable = false, length = 255)

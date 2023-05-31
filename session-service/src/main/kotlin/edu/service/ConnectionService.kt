@@ -1,9 +1,7 @@
 package edu.service
 
-import edu.api.producers.ClientMessageProducer
-import edu.config.KafkaConfig
-import edu.location.sharing.models.events.RemoveConnectionEvent
-import edu.location.sharing.models.events.StoreConnectionEvent
+import edu.location.sharing.models.events.connections.RemoveConnectionEvent
+import edu.location.sharing.models.events.connections.StoreConnectionEvent
 import edu.location.sharing.util.logger
 import edu.repository.RedisRepository
 import org.springframework.stereotype.Service
