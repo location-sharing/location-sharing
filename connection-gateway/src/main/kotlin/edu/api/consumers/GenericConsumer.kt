@@ -1,8 +1,8 @@
 package edu.api.consumers
 
 import edu.config.KafkaConfig
-import edu.location.sharing.models.events.headers.EventType
-import edu.location.sharing.models.events.headers.EventTypeKafkaHeader
+import edu.models.GroupEvent
+import edu.util.objectMapper
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -35,7 +35,7 @@ abstract class GenericConsumer(
         consumer.subscribe(listOf(topic))
     }
 
-    private val handler = CoroutineExceptionHandler {ctx, e ->
+    private val handler = CoroutineExceptionHandler { ctx, e ->
         log.error("error in context $ctx", e)
     }
 
@@ -64,13 +64,11 @@ abstract class GenericConsumer(
         // the processing inside should be non-blocking
         coroutineScope {
             launch(Dispatchers.Default) {
-                val eventType = EventTypeKafkaHeader.getEventType(record)
-                if (eventType != null) {
-                    process(eventType, record.value())
-                }
+                val event = objectMapper.readValue(record.value(), GroupEvent::class.java)
+                process(event)
             }
         }
     }
 
-    protected abstract suspend fun process(eventType: EventType, data: ByteArray)
+    protected abstract suspend fun process(event: GroupEvent)
 }

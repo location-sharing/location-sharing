@@ -7,7 +7,7 @@ fun startConsumers() {
     // start an event loop on another thread, to not block the "main" thread (server wouldn't start otherwise)
     Thread({
         runBlocking {
-            ClientMessageConsumer.receive()
+            GroupEventConsumer.receive()
         }
     }, "consumer-starter").start()
 }

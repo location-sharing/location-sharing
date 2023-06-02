@@ -19,3 +19,11 @@ kafka_topics:
   session_connection_events_topic: "session.connection.events"
   session_client_message_topic: "session.client.message"
   gateway_client_message_topic: "gateway.client.message"
+  group_events_topic: "gateway.group.events"
+
+jwt:
+  realm: "location-sharing"
+  secret: "somfsd"
+  issuer: "location-sharing"
+  audience: "location-sharing"
+
