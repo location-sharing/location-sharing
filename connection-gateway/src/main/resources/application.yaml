@@ -22,8 +22,8 @@ kafka_topics:
   group_events_topic: "gateway.group.events"
 
 jwt:
-  realm: "location-sharing"
-  secret: "somfsd"
-  issuer: "location-sharing"
-  audience: "location-sharing"
+  realm: "location-sharing-app"
+  secret: "random-key-from-env-var"
+  issuer: "location-sharing-app"
+  audience: "location-sharing-app"
 

@@ -3,6 +3,7 @@ package edu.security
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
+import edu.location.sharing.util.logger
 import io.ktor.server.config.*
 
 object JwtConfig {
@@ -19,6 +20,10 @@ object JwtConfig {
     const val JWT_AUTH_NAME = "auth-jwt"
 
     val VERIFIER: JWTVerifier by lazy {
+
+        val log = logger()
+        log.info("using secret $SECRET")
+
         JWT.require(Algorithm.HMAC384(SECRET))
             .withIssuer(ISSUER)
             .withAudience(AUDIENCE)

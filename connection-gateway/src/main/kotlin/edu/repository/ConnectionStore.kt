@@ -29,6 +29,14 @@ object ConnectionStore {
         }
     }
 
+    fun userGroupConnectionsEmpty(groupId: String, userId: String): Boolean {
+        if (connections.containsKey(groupId)) {
+            val userGroupConnections = connections[groupId]!!.getUserConnections(userId)
+            return userGroupConnections.isEmpty()
+        }
+        return true
+    }
+
     private class GroupConnections {
         private val groupConnections = ConcurrentHashMap<String, UserConnections>()
 

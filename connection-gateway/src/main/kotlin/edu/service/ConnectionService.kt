@@ -12,4 +12,8 @@ object ConnectionService {
     fun removeConnection(groupId: String, userId: String, session: WebSocketSession) {
         ConnectionStore.removeConnection(groupId, userId, session)
     }
+
+    fun userGroupConnectionsEmpty(groupId: String, userId: String): Boolean {
+        return ConnectionStore.userGroupConnectionsEmpty(groupId, userId)
+    }
 }
