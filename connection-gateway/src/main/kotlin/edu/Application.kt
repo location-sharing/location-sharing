@@ -1,6 +1,6 @@
 package edu
 
-import edu.api.consumers.startConsumers
+import edu.messaging.consumers.startConsumers
 import edu.plugins.configureJwtAuth
 import edu.plugins.configureSockets
 import io.ktor.server.application.*

@@ -13,5 +13,11 @@ class KafkaConfig(
     @Value("\${topics.validation.user.result}")
     val userValidationResponseTopic: String,
 
+    @Value("\${topics.validation.group.user.request}")
+    val groupUserValidationRequestTopic: String,
+
+    @Value("\${topics.validation.group.user.result}")
+    val groupUserValidationResultTopic: String,
+
     val kafkaProperties: KafkaProperties,
 )

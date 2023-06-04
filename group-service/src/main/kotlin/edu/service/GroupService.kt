@@ -3,6 +3,7 @@ package edu.service
 import edu.controller.exception.ForbiddenException
 import edu.dto.GroupCreateDto
 import edu.dto.GroupUpdateDto
+import edu.location.sharing.events.validation.user.*
 import edu.location.sharing.models.events.validation.user.*
 import edu.mapper.GroupMapper
 import edu.mapper.UserMapper

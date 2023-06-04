@@ -11,7 +11,7 @@ class KafkaConfig(
     val userValidationRequestTopic: String,
 
     @Value("\${topics.validation.user.result}")
-    val userValidationResponseTopic: String,
+    val userValidationResultTopic: String,
 
     val kafkaProperties: KafkaProperties,
 )

@@ -4,9 +4,12 @@ import org.springframework.stereotype.Service
 
 @Service
 class ConsumerInit(
-    userValidationResponseConsumer: UserValidationResponseConsumer
+    userValidationResultConsumer: UserValidationResultConsumer,
+    groupUserValidationRequestConsumer: GroupUserValidationRequestConsumer,
 ){
     init {
-        userValidationResponseConsumer.createFlux().subscribe()
+        userValidationResultConsumer.createFlux().subscribe()
+        groupUserValidationRequestConsumer.createFlux().subscribe()
+
     }
 }

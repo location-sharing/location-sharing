@@ -1,4 +1,4 @@
-package edu.validation
+package edu.location.sharing.events.validation.group.user
 
 data class GroupUserValidationRequestEvent(
     val groupId: String,

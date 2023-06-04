@@ -1,10 +1,10 @@
 package edu.messaging.consumers
 
-import edu.location.sharing.models.events.validation.user.UserEvent
-import edu.location.sharing.models.events.validation.user.UserValidationRequestEvent
-import edu.location.sharing.models.events.validation.user.UserValidationResponseEvent
+import edu.location.sharing.events.validation.user.UserEvent
+import edu.location.sharing.events.validation.user.UserValidationRequestEvent
+import edu.location.sharing.events.validation.user.UserValidationResultEvent
 import edu.messaging.config.KafkaConfig
-import edu.messaging.producers.UserValidationResponseProducer
+import edu.messaging.producers.UserValidationResultProducer
 import edu.service.ResourceNotFoundException
 import edu.service.UserService
 import edu.util.logger
@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux
 class UserValidationRequestConsumer(
     kafkaConfig: KafkaConfig,
     private val userService: UserService,
-    private val userValidationResponseProducer: UserValidationResponseProducer,
+    private val userValidationResultProducer: UserValidationResultProducer,
 ): GenericConsumer(
     kafkaConfig,
     kafkaConfig.userValidationRequestTopic
@@ -37,25 +37,25 @@ class UserValidationRequestConsumer(
 
                         // send a positive validation response
                         val userEvent = UserEvent(user.id, user.username)
-                        val response = UserValidationResponseEvent(
+                        val response = UserValidationResultEvent(
                             resourceId = it.resourceId,
                             metadata = it.metadata,
                             valid = true,
                             message = null,
                             userEvent
                         )
-                        userValidationResponseProducer.sendWithResultLogging(response)
+                        userValidationResultProducer.sendWithResultLogging(response)
                     } catch (e: ResourceNotFoundException) {
 
                         // send a negative validation response
-                        val response = UserValidationResponseEvent(
+                        val response = UserValidationResultEvent(
                             resourceId = it.resourceId,
                             metadata = it.metadata,
                             valid = false,
                             message = "User with id ${it.resourceId} not found",
                             null
                         )
-                        userValidationResponseProducer.sendWithResultLogging(response)
+                        userValidationResultProducer.sendWithResultLogging(response)
                     }
                 }
             }

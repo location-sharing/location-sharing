@@ -1,6 +1,6 @@
 package edu.service
 
-import edu.api.producers.GroupEventProducer
+import edu.messaging.producers.GroupEventProducer
 import edu.models.GroupEvent
 import edu.models.GroupEventType
 

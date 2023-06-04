@@ -13,13 +13,18 @@ kafka:
 
   # leader confirms is enough
   acks: 1
-  group.id: "connection-gateway"
+
+# after this prefix we generate a random value so each instance has its own consumer group
+kafka_consumer_group_id_prefix: "gateway"
 
 kafka_topics:
   session_connection_events_topic: "session.connection.events"
   session_client_message_topic: "session.client.message"
   gateway_client_message_topic: "gateway.client.message"
   group_events_topic: "gateway.group.events"
+
+  validation_group_user_request: "validation.group.user.request"
+  validation_group_user_result: "validation.group.user.result"
 
 jwt:
   realm: "location-sharing-app"
