@@ -1,9 +1,9 @@
 package edu.messaging.producers
 
 import edu.config.KafkaConfig
+import edu.location.sharing.events.validation.group.user.GroupUserValidationRequestEvent
 import edu.location.sharing.util.logger
 import edu.util.objectMapper
-import edu.validation.GroupUserValidationRequestEvent
 import org.apache.kafka.clients.producer.ProducerRecord
 
 object GroupUserValidationRequestProducer : GenericProducer() {

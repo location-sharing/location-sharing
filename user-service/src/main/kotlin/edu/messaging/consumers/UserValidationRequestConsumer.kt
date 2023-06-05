@@ -46,13 +46,22 @@ class UserValidationRequestConsumer(
                         )
                         userValidationResultProducer.sendWithResultLogging(response)
                     } catch (e: ResourceNotFoundException) {
-
                         // send a negative validation response
                         val response = UserValidationResultEvent(
                             resourceId = it.resourceId,
                             metadata = it.metadata,
                             valid = false,
                             message = "User with id ${it.resourceId} not found",
+                            null
+                        )
+                        userValidationResultProducer.sendWithResultLogging(response)
+                    } catch (e: Exception) {
+                        // send a negative validation response
+                        val response = UserValidationResultEvent(
+                            resourceId = it.resourceId,
+                            metadata = it.metadata,
+                            valid = false,
+                            message = "Unknown error occurred",
                             null
                         )
                         userValidationResultProducer.sendWithResultLogging(response)

@@ -16,4 +16,8 @@ object ConnectionService {
     fun userGroupConnectionsEmpty(groupId: String, userId: String): Boolean {
         return ConnectionStore.userGroupConnectionsEmpty(groupId, userId)
     }
+
+    fun isTheOnlyConnection(groupId: String, userId: String, connection: WebSocketSession): Boolean {
+        return ConnectionStore.isTheOnlyConnection(groupId, userId, connection)
+    }
 }

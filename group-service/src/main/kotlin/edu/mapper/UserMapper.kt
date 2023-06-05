@@ -1,7 +1,7 @@
 package edu.mapper
 
 import edu.dto.UserDto
-import edu.location.sharing.models.events.validation.user.UserEvent
+import edu.location.sharing.events.validation.user.UserEvent
 import edu.repository.model.User
 import java.util.*
 

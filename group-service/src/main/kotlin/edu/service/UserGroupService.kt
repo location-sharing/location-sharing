@@ -36,7 +36,13 @@ class UserGroupService(
                 }
         }
 
-        val groupUUID = UUID.fromString(groupId)
+        val groupUUID = try {
+            UUID.fromString(groupId)
+        } catch (e: Exception) {
+            throw ResourceNotFoundException(
+                "Group id $groupId is not a valid UUID"
+            )
+        }
 
         return user.groups.find { it.id == groupUUID }
             ?: throw ResourceNotFoundException(

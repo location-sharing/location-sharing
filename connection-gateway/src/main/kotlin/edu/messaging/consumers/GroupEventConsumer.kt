@@ -10,12 +10,13 @@ import java.time.Duration.ofMillis
 
 object GroupEventConsumer : GenericConsumer(
     KafkaConfig.groupEventsTopic,
-    pollTimeout = ofMillis(300000),
+    ofMillis(300000),
 ) {
     override val log = logger()
 
     override suspend fun process(record: ConsumerRecord<String, ByteArray>) {
         val event = objectMapper.readValue(record.value(), GroupEvent::class.java)
+        log.info("consuming group event $event")
         ClientMessageSender.sendToGroup(event)
     }
 }

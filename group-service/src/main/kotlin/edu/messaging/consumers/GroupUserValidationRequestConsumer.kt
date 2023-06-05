@@ -20,7 +20,7 @@ class GroupUserValidationRequestConsumer(
     private val groupUserValidationResultProducer: GroupUserValidationResultProducer,
 ): GenericConsumer(
     kafkaConfig,
-    kafkaConfig.userValidationRequestTopic
+    kafkaConfig.groupUserValidationRequestTopic
 ) {
 
     override val log = logger()
@@ -51,6 +51,16 @@ class GroupUserValidationRequestConsumer(
                             metadata = it.metadata,
                             valid = false,
                             message = "Group with id ${it.groupId} does not exist for user with id ${it.userId}",
+                        )
+                        groupUserValidationResultProducer.sendWithResultLogging(response)
+                    } catch (e: Exception) {
+                        // send a negative validation response
+                        val response = GroupUserValidationResultEvent(
+                            groupId = it.groupId,
+                            userId = it.userId,
+                            metadata = it.metadata,
+                            valid = false,
+                            message = "Unknown error occurred",
                         )
                         groupUserValidationResultProducer.sendWithResultLogging(response)
                     }

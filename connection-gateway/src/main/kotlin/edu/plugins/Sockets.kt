@@ -1,9 +1,9 @@
 package edu.plugins
 
 import edu.models.ClientMessage
-import edu.security.AuthorizationException
 import edu.security.JwtConfig
 import edu.security.toAuthenticatedUser
+import edu.service.ConnectionService.isTheOnlyConnection
 import edu.service.ConnectionService.removeConnection
 import edu.service.ConnectionService.storeConnection
 import edu.service.ConnectionService.userGroupConnectionsEmpty
@@ -12,18 +12,20 @@ import edu.service.GroupEventService.sendDisconnectedNotificationEvent
 import edu.service.GroupEventService.sendMessageEvent
 import edu.util.objectMapper
 import edu.validation.GroupUserValidationService
+import edu.validation.isPending
+import edu.validation.isValid
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 import java.time.Duration
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
 
 private val LOG = LoggerFactory.getLogger("WebSocketLogger")
 
@@ -42,150 +44,73 @@ fun Application.configureSockets() {
 
             webSocket("/group") {
                 val user = call.principal<JWTPrincipal>()!!.toAuthenticatedUser()
+                val userId = user.id
 
                 // TODO: we could send a notification event saying that the user is online
-                var groupId: String? = null
+
+                // validate the group
+                val groupId = call.request.queryParameters["groupId"]
+
+                if (groupId == null) {
+                    close(CloseReason(
+                        CloseReason.Codes.CANNOT_ACCEPT,
+                        "groupId request parameter cannot be null"
+                    ))
+                    return@webSocket
+                }
+
+                if (!userGroupConnectionsEmpty(groupId, userId)) {
+                    // group membership already validated, but this particular connection has not been added
+                    storeConnection(groupId, userId, this)
+                    LOG.info("received message from user: ${user.id}")
+                } else {
+                    validateGroupUserMembership(groupId, userId) {
+                        LOG.info("group membership validation success, storing connection")
+                        storeConnection(groupId, userId, this@webSocket)
+
+                        sendConnectedNotificationEvent(groupId, userId)
+                        LOG.info("user $userId connected to group $groupId, connection ${this@webSocket} stored")
+                    }
+                }
 
                 try {
-
                     for (frame in incoming) {
-
-                        // 1. parse the message
                         val message = parseMessage(frame) ?: continue
+                        LOG.info("parsed message $message")
 
-                        groupId = message.groupId
-                        val userId = user.id
+                        sendMessageEvent(groupId, user.id, message.content)
 
-                        // 2. validate group user membership
-                        if (!userGroupConnectionsEmpty(groupId, userId)) {
-                            LOG.info("received message from user: ${user.id}")
-                            sendMessageEvent(message.groupId, user.id, message.content)
-                            continue
-                        }
-
-                        // validation needed
-                        try {
-                            validateGroupUserMembership(groupId, userId) {
-                                storeConnection(groupId, userId, this@webSocket)
-                                sendConnectedNotificationEvent(groupId, userId)
-                                LOG.info("user $userId connected to group $groupId, connection ${this@webSocket} stored")
-
-                                LOG.info("received message from user: ${user.id}")
-                                sendMessageEvent(message.groupId, user.id, message.content)
-                            }
-                        } catch (e: AuthorizationException) {
-                            close(CloseReason(
-                                CloseReason.Codes.INTERNAL_ERROR,
-                                objectMapper.writeValueAsString(e)
-                            ))
-                        }
                     }
                 } catch (e: ClosedReceiveChannelException) {
                     LOG.info("connection $this closed")
                 } catch (e: Exception) {
                     LOG.warn("connection $this closed with exception: $e")
                 } finally {
-                    if (groupId == null) {
-                        LOG.info("groupId == null, closed connection $this")
-                    } else {
-                        if (!userGroupConnectionsEmpty(groupId, user.id)) {
-                            removeConnection(groupId, user.id, this)
+                    if (!userGroupConnectionsEmpty(groupId, user.id)) {
+                        removeConnection(groupId, user.id, this)
+                        LOG.info("removed connection $this")
+
+                        if (isTheOnlyConnection(groupId, user.id, this)) {
                             sendDisconnectedNotificationEvent(groupId, user.id)
-                            LOG.info("removed connection $this")
                         }
-                        LOG.info("closed connection $this")
                     }
+                    LOG.info("closed connection $this")
                 }
-
-
-//                // for now use the first frame to set the connection
-//                // don't catch an InvalidMessageException,
-//                // because the groupId, userId can be fetched from any message type
-//                val firstMessage: ClientMessage
-//                try {
-//                    firstMessage = parseFirstMessage()
-//                } catch (e: InvalidFrameFormatException) {
-//                    close(CloseReason(
-//                        CloseReason.Codes.INTERNAL_ERROR, "frame parse error, invalid message format")
-//                    )
-//                    return@webSocket
-//                }
-//
-//                val groupId = firstMessage.groupId
-//                val userId = user.id
-//
-//
-//                val connectionValid = AtomicBoolean(!userGroupConnectionsEmpty(groupId, userId))
-//
-//                if (!connectionValid.get()) {
-//                    // TODO: send out a validation event, set a callback on validation success/failure
-//
-//                    val validationRequest = GroupUserValidationRequestEvent(groupId, userId)
-//                    GroupUserValidationRequestProducer.sendValidationRequest(validationRequest)
-//
-//                    launch {
-//                        delay(20000)
-//                        connectionValid.set(true)
-//                        outgoing.send(Frame.Text("validation success"))
-//                    }
-//                }
-//
-//                // lock until connection gets validated, set a timeout too
-//                try {
-//                    withTimeout(30000) {
-//                        while (!connectionValid.get()) {
-//                            delay(1000)
-//                            outgoing.send(Frame.Text("pending validation"))
-//                        }
-//                    }
-//                } catch (e: TimeoutCancellationException) {
-//                    close(
-//                        CloseReason(CloseReason.Codes.INTERNAL_ERROR, "validation failed")
-//                    )
-//                }
-//
-//
-//
-//                storeConnection(
-//                    groupId,
-//                    userId,
-//                    this
-//                )
-//
-//                LOG.info("user $userId connected to group $groupId, connection $this stored")
-//
-//                sendConnectedNotificationEvent(groupId, userId)
-//                sendMessageEvent(groupId, userId, firstMessage.content)
-//
-//                // TODO: send response after connection has been stored by the session service?
-//
-//                try {
-//                    processMessages(user)
-//                } catch (e: ClosedReceiveChannelException) {
-//                    LOG.info("connection $this closed")
-//                } catch (e: Exception) {
-//                    LOG.warn("connection $this closed with exception: $e")
-//                } finally {
-//                    removeConnection(
-//                        groupId,
-//                        userId,
-//                        this
-//                    )
-//                    sendDisconnectedNotificationEvent(groupId, userId)
-//                    LOG.info("removed connection $this")
-//                }
             }
         }
     }
 }
 
-//private fun parseMessage(frame: Frame.Text): ClientMessage {
-//    return objectMapper.readValue(frame.readText(), ClientMessage::class.java)
-//}
+data class WebSocketMessageInvalidException(val title: String, val message: String)
 
-private fun parseMessage(frame: Frame): ClientMessage? {
+private suspend fun WebSocketSession.parseMessage(frame: Frame): ClientMessage? {
     if (frame !is Frame.Text) {
         LOG.warn("incoming frame is not text, ignoring it")
+        outgoing.send(Frame.Text(
+            objectMapper.writeValueAsString(
+                WebSocketMessageInvalidException("Invalid message", "Only JSON messages are supported")
+            )
+        ))
         return null
     }
 
@@ -193,74 +118,41 @@ private fun parseMessage(frame: Frame): ClientMessage? {
         objectMapper.readValue(frame.readText(), ClientMessage::class.java)
     } catch (e: Exception) {
         LOG.warn("parse exception at frame: $frame; {}", e)
+        outgoing.send(Frame.Text(
+            objectMapper.writeValueAsString(
+                WebSocketMessageInvalidException("Invalid message", "Messages must have the right JSON format")
+            )
+        ))
         null
     }
 }
 
-private suspend fun validateGroupUserMembership(
+private suspend fun WebSocketSession.validateGroupUserMembership(
     groupId: String,
     userId: String,
     onSuccess: () -> Unit
 ) {
-    GroupUserValidationService.sendValidationRequest(groupId, userId) {
-            throw AuthorizationException("Error", "Group validation timed out")
-    }.invokeOnCompletion { ex ->
-        if (ex == null) {
-            onSuccess()
-        } else {
-            LOG.info("group user validation error")
-            throw AuthorizationException(detail = ex.message)
+    val validationState = GroupUserValidationService.sendValidationRequest(groupId, userId)
+    try {
+        withTimeout(30000) {
+            while (validationState.isPending()) {
+                delay(50)
+            }
         }
+    } catch (e: TimeoutCancellationException) {
+        close(CloseReason(
+            CloseReason.Codes.INTERNAL_ERROR,
+            "Group validation timed out"
+        ))
+    }
+
+    if (validationState.isValid()) {
+        onSuccess()
+        return
+    } else {
+        close(CloseReason(
+            CloseReason.Codes.INTERNAL_ERROR,
+            "Group validation error"
+        ))
     }
 }
-
-private fun WebSocketSession.storeConnectionAndSendMessage(
-    groupId: String,
-    userId: String,
-    message: ClientMessage
-) {
-    storeConnection(groupId, userId, this)
-    sendConnectedNotificationEvent(groupId, userId)
-    LOG.info("user $userId connected to group $groupId, connection $this stored")
-
-    LOG.info("received message from user: $userId")
-    sendMessageEvent(message.groupId, userId, message.content)
-}
-
-//class InvalidFrameFormatException: Exception()
-
-//private suspend inline fun WebSocketSession.parseFirstMessage(): ClientMessage {
-//    val firstFrame = incoming.receive()
-//
-//    if (firstFrame !is Frame.Text) {
-//        LOG.warn("incoming frame is not text, ignoring it")
-//        throw InvalidFrameFormatException()
-//    }
-//
-//    try {
-//        return parseMessage(firstFrame)
-//    } catch (e: Exception) {
-//        LOG.warn("parse exception at frame: $firstFrame; {}", e)
-//        throw InvalidFrameFormatException()
-//    }
-//}
-//
-//private suspend fun WebSocketSession.processMessages(authenticatedUser: AuthenticatedUser) {
-//    for (frame in incoming) {
-//        if (frame !is Frame.Text) {
-//            LOG.warn("incoming frame is not text, ignoring it")
-//            continue
-//        }
-//
-//        val message = try {
-//            parseMessage(frame)
-//        }
-//        catch (e: Exception) {
-//            LOG.warn("parse exception at frame: $frame; {}", e)
-//            continue
-//        }
-//
-//        LOG.info("received message from user: ${authenticatedUser.id}")
-//        sendMessageEvent(message.groupId, authenticatedUser.id, message.content)
-//    }
-//}
