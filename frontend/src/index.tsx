@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Map from './components/map/map';
-import TestComponent from './components/map/test';
+import LoginForm from './components/login-form/LoginForm';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -12,8 +12,10 @@ const root = ReactDOM.createRoot(
 root.render(
   // <React.StrictMode>
 
-    <Map/>
-    // <TestComponent/>
+    // <Map/>
+  <LoginForm />
+  // <Input id='login' type='email' name='email' placeholder='name@company.com' required/>
+
   // </React.StrictMode>
 );
 
