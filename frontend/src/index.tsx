@@ -5,6 +5,10 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Map from './components/map/map';
 import LoginForm from './components/login-form/LoginForm';
+import { RouterProvider } from 'react-router-dom';
+import Dashboard from './pages/Dashboard';
+import router from './router/router';
+
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -12,8 +16,9 @@ const root = ReactDOM.createRoot(
 root.render(
   // <React.StrictMode>
 
+  <RouterProvider router={router} />
     // <Map/>
-  <LoginForm />
+  // <LoginForm />
   // <Input id='login' type='email' name='email' placeholder='name@company.com' required/>
 
   // </React.StrictMode>
