@@ -1,15 +1,20 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { LINKS } from "../../router/router";
 import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
-import { useState } from "react"
 import ErrorAlert from "../base/alerts/ErrorAlert";
+import { setAuthToken } from "../../services/auth";
+import IServerError, { getErrorFromResponse } from "../../errors/ServerError";
+import httpStatus from "http-status";
 
 interface LoginData {
   username?: string,
   password?: string,
 }
 
-const loginUrl = 'http://localhost:8081/api/users/authenticate'
+const loginUrl = 'http://localhost:8082/api/user/authenticate'
 
 const login = async (loginData: LoginData) => fetch(
   loginUrl,
@@ -22,15 +27,6 @@ const login = async (loginData: LoginData) => fetch(
   }
 )
 
-class LoginError {
-  static title = "Login error";
-  message: string;
-
-  constructor(message: string) {
-    this.message = message
-  }
-}
-
 export default function LoginForm() {
 
   const [username, setUsername] = useState<string>()
@@ -38,37 +34,40 @@ export default function LoginForm() {
 
   const [error, setError] = useState<string>()
 
-  const handleSubmit: React.FormEventHandler = async event => {
+  const navigate = useNavigate()
 
-    console.log(`submit ${event}`);
+  const handleSubmit: React.FormEventHandler = async event => {
 
     event.preventDefault();
     try {
-      if (!username || !password) {
-        setError("Username and password must not be empty.")
-      }
-
       const credentials: LoginData = {
         username, password
       }
 
       const response = await login(credentials)
-      console.log(`${response}`);
-      
-      
-      sessionStorage.setItem("token", "dummy")
-      
 
-    } catch (error: any) {
-      setError("An unknown error occurred.")
+      console.log(response)
+
+      if (response.status === httpStatus.OK) {        
+        await setAuthToken(response)
+        // redirect to where the user came from
+        navigate(LINKS.DASHBOARD)
+      } else if (response.status === httpStatus.UNAUTHORIZED) {
+        const error = await getErrorFromResponse(response)
+        setError(error ? error.detail : "Username or password invalid." )
+      } else {
+        setError("An error occurred.")      
+      }
+    } catch (error: any) {      
+      setError("An error occurred.")      
     }
   }
 
   return (
-    <div className="mx-auto w-full">
+    <div>
       { error ? <ErrorAlert title="Login error" message={error} onClose={ () => setError(undefined) }/> : null}
 
-      <div className="mx-auto w-full bg-theme-bg-1 rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0">
+      <div className="mx-auto w-full bg-theme-bg-1 rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0 ">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl">
                 Sign in to your account
@@ -89,13 +88,13 @@ export default function LoginForm() {
                     />
                 </div>
                 <Button type="submit">Sign in</Button>
-                <p className="text-sm text-gray-500">
-                    Don’t have an account yet? <a href="#" className="font-medium text-primary-600 hover:underline">Sign up</a>
+                <p className="text-sm text-gray-500 text-center">
+                    Don’t have an account yet?
+                    <Link to={LINKS.REGISTER} className="font-medium text-primary-600 hover:underline"> Sign up</Link>
                 </p>
             </form>
         </div>
       </div>
     </div>
-
   )
 }

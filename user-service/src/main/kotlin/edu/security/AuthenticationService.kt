@@ -37,6 +37,4 @@ class AuthenticationService(
 
         return jwtUtils.generate(user)
     }
-
-
 }

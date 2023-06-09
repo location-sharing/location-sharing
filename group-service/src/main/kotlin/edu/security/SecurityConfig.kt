@@ -1,10 +1,12 @@
 package edu.security
 
-import edu.security.filters.JwtAuthenticationConverter
-import edu.security.filters.JwtAuthenticationFailureHandler
-import edu.security.filters.JwtAuthenticationManager
+import edu.security.cors.CorsConfig
+import edu.security.jwt.JwtAuthenticationConverter
+import edu.security.jwt.JwtAuthenticationFailureHandler
+import edu.security.jwt.JwtAuthenticationManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -15,6 +17,7 @@ class SecurityConfig(
     val jwtAuthManager: JwtAuthenticationManager,
     val jwtAuthConverter: JwtAuthenticationConverter,
     val jwtAuthFailureHandler: JwtAuthenticationFailureHandler,
+    val corsConfig: CorsConfig,
 ) {
 
     @Bean
@@ -31,7 +34,11 @@ class SecurityConfig(
             .httpBasic { it.disable() }
             .formLogin { it.disable() }
             .logout { it.disable() }
+            // by setting cors here, we guarantee that it gets invoked relatively early in the filter chain
+            .cors { it.configurationSource(corsConfig.configurationSource) }
             .authorizeExchange {
+                // for preflight requests
+                it.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 it.anyExchange().authenticated()
             }
             .addFilterAt(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION)

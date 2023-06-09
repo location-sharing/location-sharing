@@ -46,8 +46,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(Exception::class)
     fun handle(e: Exception): ResponseEntity<WebException> {
         val webException = WebException(
-            "Exception",
-            e.message
+            "Internal server error",
+            "An error occurred."
         )
         e.printStackTrace()
         return ResponseEntity

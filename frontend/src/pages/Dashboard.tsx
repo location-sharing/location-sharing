@@ -1,9 +1,10 @@
-import LoginForm from "../components/login-form/LoginForm"
+import { isAuthenticated } from "../services/auth"
+import LoginPage from "./LoginPage"
 
 export default function Dashboard() {
 
-  if (!sessionStorage.getItem("token")) {
-    return <LoginForm />
+  if (!isAuthenticated()) {
+    return <LoginPage/>
   }
   
   return (

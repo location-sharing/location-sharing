@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Map from './components/map/map';
-import LoginForm from './components/login-form/LoginForm';
+import LoginForm from './components/auth/LoginForm';
 import { RouterProvider } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import router from './router/router';

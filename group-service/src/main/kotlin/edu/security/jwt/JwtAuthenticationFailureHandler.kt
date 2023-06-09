@@ -1,4 +1,4 @@
-package edu.security.filters
+package edu.security.jwt
 
 import edu.util.objectMapper
 import org.springframework.core.io.buffer.DefaultDataBufferFactory

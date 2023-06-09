@@ -20,6 +20,15 @@ logging:
 
 jwt.secret: "random-key-from-env-var"
 
+cors:
+  mappings:
+    - url: "/**"
+      originPatterns: "http://localhost:[*]"
+      allowedMethods: "*"
+      allowedHeaders: "*"
+      exposedHeaders: "Authorization"
+      allowCredentials: true
+
 server:
   port: 8083
 

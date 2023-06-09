@@ -5,7 +5,7 @@ import edu.dto.GroupDetailDto
 import edu.dto.GroupDto
 import edu.dto.GroupUpdateDto
 import edu.mapper.GroupMapper
-import edu.security.filters.AuthenticatedUser
+import edu.security.jwt.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
 import kotlinx.coroutines.Dispatchers
