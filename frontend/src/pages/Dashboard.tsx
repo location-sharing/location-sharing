@@ -1,3 +1,4 @@
+import Heading from "../components/base/Heading"
 import { isAuthenticated } from "../services/auth"
 import LoginPage from "./LoginPage"
 
@@ -8,6 +9,8 @@ export default function Dashboard() {
   }
   
   return (
-    <h1 className="text-center mx-auto font-bold text-xl">Dashboard will be here (eventually)</h1>
+    <div>
+      <Heading>Dashboard will be here (eventually)</Heading>
+    </div>
   )
 }

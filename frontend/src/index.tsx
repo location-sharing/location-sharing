@@ -5,9 +5,11 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Map from './components/map/map';
 import LoginForm from './components/auth/LoginForm';
-import { RouterProvider } from 'react-router-dom';
+import { RouterProvider, Link } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
-import router from './router/router';
+import router, { LINKS } from './router/router';
+import Heading from './components/base/Heading';
+import NavLink from './components/base/NavLink';
 
 
 const root = ReactDOM.createRoot(
@@ -16,7 +18,19 @@ const root = ReactDOM.createRoot(
 root.render(
   // <React.StrictMode>
 
-  <RouterProvider router={router} />
+  <div className='w-full'>
+    <header className="flex flex-row justify-between items-center sm:w-11/12 mx-auto">
+      <Heading>Demo</Heading>
+      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
+        <NavLink link={LINKS.DASHBOARD}>Dashboard</NavLink>
+        <NavLink link={LINKS.LOGIN}>Sign In</NavLink>
+        <NavLink link={LINKS.REGISTER}>Sign Up</NavLink>
+        <NavLink link={LINKS.GROUPS}>Groups</NavLink>
+      </nav>
+    </header>
+    <RouterProvider router={router} />
+  </div>
+  
     // <Map/>
   // <LoginForm />
   // <Input id='login' type='email' name='email' placeholder='name@company.com' required/>
