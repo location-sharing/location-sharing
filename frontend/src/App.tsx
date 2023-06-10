@@ -1,25 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Outlet } from "react-router-dom";
+import Heading from './components/base/Heading';
+import NavLink from './components/base/NavLink';
+import { LINKS } from './router/router';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <div className='w-full'>
+    <header className="sticky top-0 flex flex-row justify-between items-center sm:w-11/12 mx-auto">
+      <Heading>Demo</Heading>
+      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
+        <NavLink link={LINKS.DASHBOARD}>Dashboard</NavLink>
+        <NavLink link={LINKS.LOGIN}>Sign In</NavLink>
+        <NavLink link={LINKS.REGISTER}>Sign Up</NavLink>
+        <NavLink link={LINKS.GROUPS}>Groups</NavLink>
+      </nav>
+    </header>
+    <Outlet/>
+  </div>
   );
 }
 
