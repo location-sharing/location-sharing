@@ -5,18 +5,14 @@ import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
 import ErrorAlert from "../base/alerts/ErrorAlert";
-import { setAuthToken } from "../../services/auth";
-import IServerError, { getErrorFromResponse } from "../../errors/ServerError";
+import { setAuth } from "../../services/auth";
 import httpStatus from "http-status";
-
-interface LoginData {
-  username?: string,
-  password?: string,
-}
+import LoginCredentials from "../../models/auth/LoginCredentials";
+import { getErrorFromResponse } from "../../util/util";
 
 const loginUrl = 'http://localhost:8082/api/user/authenticate'
 
-const login = async (loginData: LoginData) => fetch(
+const login = async (loginData: LoginCredentials) => fetch(
   loginUrl,
   {
     method: 'POST',
@@ -40,23 +36,24 @@ export default function LoginForm() {
 
     event.preventDefault();
     try {
-      const credentials: LoginData = {
+      const credentials = {
         username, password
       }
 
-      const response = await login(credentials)
+      const response = await login(credentials as LoginCredentials)
 
       console.log(response)
 
       if (response.status === httpStatus.OK) {        
-        await setAuthToken(response)
+        await setAuth(response)
         // redirect to where the user came from
         navigate(LINKS.DASHBOARD)
       } else if (response.status === httpStatus.UNAUTHORIZED) {
-        const error = await getErrorFromResponse(response)
-        setError(error ? error.detail : "Username or password invalid." )
+        const errorResponse = await getErrorFromResponse(response)
+        setError(errorResponse ? errorResponse.detail : "Username or password invalid." )
       } else {
-        setError("An error occurred.")      
+        const errorResponse = await getErrorFromResponse(response)
+        setError(errorResponse ? errorResponse.detail : "An error occurred.")      
       }
     } catch (error: any) {      
       setError("An error occurred.")      

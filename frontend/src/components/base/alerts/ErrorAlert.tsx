@@ -4,10 +4,10 @@ export default function ErrorAlert(props: {
   onClose: () => void
 }) {
   return (
-    <div className="w-screen absolute top-4">
+    <div className="w-full absolute top-0 p-4">
       <div className="
       relative
-      sm:max-w-md
+      max-w-md
       mx-auto
       bg-red-300 border-t-4 
       border-red-600 rounded-b 

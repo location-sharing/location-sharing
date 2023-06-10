@@ -2,7 +2,7 @@ import RegisterForm from "../components/auth/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <div className="mx-auto w-full h-full flex flex-col justify-center">
+    <div className="mx-auto w-full relative top-36 p-4">
       <RegisterForm/>
     </div>
   )

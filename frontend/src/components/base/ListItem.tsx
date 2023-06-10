@@ -1,7 +1,6 @@
-export default function ListItem(props: {
-  classes?: string,
-} & React.PropsWithChildren
-  ) {
+import { BaseComponentProps } from "../../util/util";
+
+export default function ListItem(props: BaseComponentProps) {
   return (
     <li className={`bg-white px-4 py-2 ring-1 ring-slate-200 rounded ${props.classes ?? ''}`}>
       {props.children}

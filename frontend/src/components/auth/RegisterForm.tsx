@@ -1,29 +1,24 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import UserCreate from "../../models/user/UserCreate";
 import { LINKS } from "../../router/router";
+import { removeAuth } from "../../services/auth";
 import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
 import ErrorAlert from "../base/alerts/ErrorAlert";
-import { removeAuthToken } from "../../services/auth";
 
-
-interface RegisterData {
-  username?: string,
-  email?: string,
-  password?: string,
-}
 
 const registerUrl = 'http://localhost:8082/api/user'
 
-const register = async (RegisterData: RegisterData) => fetch(
+const register = async (data: UserCreate) => fetch(
   registerUrl,
   {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(RegisterData)
+    body: JSON.stringify(data)
   }
 )
 
@@ -41,16 +36,16 @@ export default function RegisterForm() {
 
     event.preventDefault();
     try {
-      const credentials: RegisterData = {
+      const createData = {
         username, email, password
       }
 
-      const response = await register(credentials)
+      const response = await register(createData as UserCreate)
       console.log(response);
       console.log(await response.json());
 
       if (response.ok) {    
-        removeAuthToken()
+        removeAuth()
         navigate(LINKS.DASHBOARD)
       } else {
         setError("An error occurred.")      
