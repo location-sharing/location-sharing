@@ -11,13 +11,8 @@ const root = ReactDOM.createRoot(
 root.render(
   // <React.StrictMode>
 
-  
     <RouterProvider router={router} />
-  
-    // <Map/>
-  // <LoginForm />
-  // <Input id='login' type='email' name='email' placeholder='name@company.com' required/>
-
+    
   // </React.StrictMode>
 );
 

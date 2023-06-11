@@ -1,22 +1,24 @@
-import { Outlet } from "react-router-dom";
+import { useState } from "react";
+import { Outlet, Link } from "react-router-dom";
 import Heading from './components/base/Heading';
-import NavLink from './components/base/NavLink';
+import NavItem from "./components/base/NavItem";
+import AuthContext from "./context/AuthContext";
 import { LINKS } from './router/router';
+import { AuthenticatedUser } from "./services/auth";
+import Header from "./pages/header/PageHeader";
+import PageHeader from "./pages/header/PageHeader";
 
 function App() {
+
+  const [user, setUser] = useState<AuthenticatedUser>()
+
   return (
-    <div className='w-full'>
-    <header className="sticky top-0 flex flex-row justify-between items-center sm:w-11/12 mx-auto">
-      <Heading>Demo</Heading>
-      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
-        <NavLink link={LINKS.DASHBOARD}>Dashboard</NavLink>
-        <NavLink link={LINKS.LOGIN}>Sign In</NavLink>
-        <NavLink link={LINKS.REGISTER}>Sign Up</NavLink>
-        <NavLink link={LINKS.GROUPS}>Groups</NavLink>
-      </nav>
-    </header>
-    <Outlet/>
-  </div>
+
+    <AuthContext.Provider value={{ user, setUser }}>
+        <PageHeader/>
+        <Outlet/>
+    </AuthContext.Provider>
+
   );
 }
 

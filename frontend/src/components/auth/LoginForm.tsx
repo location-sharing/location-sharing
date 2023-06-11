@@ -5,10 +5,10 @@ import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
 import ErrorAlert from "../base/alerts/ErrorAlert";
-import { setAuth } from "../../services/auth";
 import httpStatus from "http-status";
 import LoginCredentials from "../../models/auth/LoginCredentials";
 import { getErrorFromResponse } from "../../util/util";
+import useAuth from "../../services/auth";
 
 const loginUrl = 'http://localhost:8082/api/user/authenticate'
 
@@ -30,11 +30,13 @@ export default function LoginForm() {
 
   const [error, setError] = useState<string>()
 
+  const { storeUser } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit: React.FormEventHandler = async event => {
-
     event.preventDefault();
+    let errorMessage = "An error occurred."
+
     try {
       const credentials = {
         username, password
@@ -42,27 +44,31 @@ export default function LoginForm() {
 
       const response = await login(credentials as LoginCredentials)
 
-      console.log(response)
-
       if (response.status === httpStatus.OK) {        
-        await setAuth(response)
+        await storeUser(response)
         // redirect to where the user came from
         navigate(LINKS.DASHBOARD)
-      } else if (response.status === httpStatus.UNAUTHORIZED) {
-        const errorResponse = await getErrorFromResponse(response)
-        setError(errorResponse ? errorResponse.detail : "Username or password invalid." )
       } else {
+        if (response.status === httpStatus.UNAUTHORIZED) {
+          errorMessage = "Username or password invalid."
+        }
         const errorResponse = await getErrorFromResponse(response)
-        setError(errorResponse ? errorResponse.detail : "An error occurred.")      
+        setError(errorResponse ? errorResponse.detail : errorMessage)
       }
     } catch (error: any) {      
-      setError("An error occurred.")      
+      setError(errorMessage)      
     }
   }
 
   return (
-    <div>
-      { error ? <ErrorAlert title="Login error" message={error} onClose={ () => setError(undefined) }/> : null}
+    <div className="relative">
+      { error ? 
+        <div className="relative bottom-12 w-full">
+          <ErrorAlert title="Login error" message={error} onClose={ () => setError(undefined) }/> 
+        </div>
+        :
+        null
+      }
 
       <div className="mx-auto w-full bg-theme-bg-1 rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0 ">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">

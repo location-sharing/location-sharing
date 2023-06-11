@@ -1,16 +1,16 @@
+import httpStatus from "http-status"
+import { useEffect, useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
 import Button from "../components/base/Button"
+import Heading from "../components/base/Heading"
 import { List } from "../components/base/List"
 import ListItem from "../components/base/ListItem"
 import Tag from "../components/base/Tag"
-import Group from "../models/group/Group"
-import { useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react"
-import { LINKS } from "../router/router"
-import httpStatus from "http-status"
-import { getErrorFromResponse } from "../util/util"
 import ErrorAlert from "../components/base/alerts/ErrorAlert"
-import { getAuth } from "../services/auth"
-import Heading from "../components/base/Heading"
+import Group from "../models/group/Group"
+import { LINKS } from "../router/router"
+import useAuth from "../services/auth"
+import { getErrorFromResponse } from "../util/util"
 
 const groupsUrl = "http://localhost:8083/api/groups"
 
@@ -29,19 +29,11 @@ export default function GroupsPage() {
   const [error, setError] = useState<string>()
   const [groups, setGroups] = useState<Array<Group>>()
 
-  // TODO: set user in a context in the login component
-  const [user, setUser] = useState<any>()
+  const { user } = useAuth()
 
   const loadGroups = async () => {
     try {
-      const user = getAuth()
-      if (!user) {
-        navigate(LINKS.LOGIN)
-      }
-
-      setUser(user)
-
-      const response = await fetchGroups(user!.token!)
+      const response = await fetchGroups(user!.token)
 
       if (response.status === httpStatus.OK) {  
         setGroups(await response.json())
@@ -63,7 +55,6 @@ export default function GroupsPage() {
       return (
         <div>
           <p>It seems you are not a member of a group yet.</p>
-          
         </div>
       )
     } else {
@@ -95,8 +86,17 @@ export default function GroupsPage() {
 
   return (
     <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-1/2 mx-auto px-4">
-      { error ? <ErrorAlert title="Error while fetching groups" message={error} onClose={() => setError(undefined)}/> : null}
+      { error ? 
+        <div className="relative bottom-12 w-full">
+          <ErrorAlert title="Error while fetching groups" message={error} onClose={() => setError(undefined)}/> 
+        </div>
+        : 
+        null
+      }
       <Heading classes="mb-4">Groups</Heading>
+      <Link to={LINKS.GROUP_CREATE}>
+        <button className="px-3 py-2 text-white bg-green-700 rounded-md hover:bg-green-600">New Group</button>
+      </Link>
       <div className="w-full h-full flex flex-row justify-center items-center gap-x-12">
         { groups === undefined ? 
           <div>
@@ -106,7 +106,6 @@ export default function GroupsPage() {
           renderGroups()
         }
       </div>
-      
     </section>
   )
 }

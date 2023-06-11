@@ -6,13 +6,18 @@ import GroupDetailPage from '../pages/GroupDetailPage';
 import GroupsPage from '../pages/GroupsPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import ProtectedRoutes from './ProtectedRoutes';
+import HomePage from '../pages/HomePage';
+import CreateGroupsPage from '../pages/CreateGroupPage';
 
 export const LINKS = {
-  DASHBOARD: "/",
+  HOME: "/",
+  DASHBOARD: "/dashboard",
   LOGIN: "/login",
   REGISTER: "/register",
   GROUPS: "/groups",
-  GROUPDETAIL: "/groups/:groupId",
+  GROUP_CREATE: "/groups/new",
+  GROUP_DETAIL: "/groups/:groupId",
 }
 
 const router = createBrowserRouter([
@@ -20,9 +25,30 @@ const router = createBrowserRouter([
     element: <App/>,
     children: [
       {
-        path: LINKS.DASHBOARD,
-        element: <Dashboard/>,
-        errorElement: <ErrorBoundary/>
+        element: <ProtectedRoutes/>,
+        children: [
+          {
+            path: LINKS.DASHBOARD,
+            element: <Dashboard/>,
+            errorElement: <ErrorBoundary/>
+          },
+          {
+            path: LINKS.GROUPS,
+            element: <GroupsPage/>,
+          },
+          {
+            path: LINKS.GROUP_CREATE,
+            element: <CreateGroupsPage/>,
+          },
+          {
+            path: LINKS.GROUP_DETAIL,
+            element: <GroupDetailPage />
+          }
+        ]
+      },
+      {
+        path: LINKS.HOME,
+        element: <HomePage/>
       },
       {
         path: LINKS.LOGIN,
@@ -32,14 +58,6 @@ const router = createBrowserRouter([
         path: LINKS.REGISTER,
         element: <RegisterPage/>
       },
-      {
-        path: LINKS.GROUPS,
-        element: <GroupsPage/>,
-      },
-      {
-        path: LINKS.GROUPDETAIL,
-        element: <GroupDetailPage />
-      }
     ]
   },
 ]);

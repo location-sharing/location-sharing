@@ -1,7 +1,7 @@
 import { BaseComponentProps } from "../../util/util";
 import { Link } from "react-router-dom";
 
-export default function NavLink(props: {
+export default function NavItem(props: {
   link: string,
 } & BaseComponentProps) {
   return (

@@ -1,5 +1,8 @@
-import AuthTokenResponse from "../models/auth/AuthToken";
 import jwtDecode, { JwtPayload } from "jwt-decode";
+import { useContext, useEffect } from "react";
+import AuthContext from "../context/AuthContext";
+import AuthTokenResponse from "../models/auth/AuthToken";
+
 
 const AUTH_USER_KEY = "authUser";
 
@@ -8,13 +11,61 @@ interface AuthToken extends JwtPayload {
   username: string
 }
 
-interface AuthenticatedUser { 
+export interface AuthenticatedUser { 
   token: string,
   userId: string,
   username: string
 }
 
-export async function setAuth(response: Response) {
+// export async function setAuth(response: Response) {
+//   const { token } : AuthTokenResponse = await response.json()
+//   if (!token) {
+//     throw Error("Malformed token response")
+//   }
+
+//   let payload;
+//   try {
+//     payload = jwtDecode<AuthToken>(token)
+//   } catch (err) {
+//     throw Error("Error while parsing auth token")
+//   }
+
+//   const user : AuthenticatedUser = {
+//     token: token,
+//     userId: payload.userId,
+//     username: payload.username
+//   }
+//   sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
+// }
+
+// export function removeAuth() {
+//   sessionStorage.removeItem(AUTH_USER_KEY)
+// }
+
+// export function getAuth(): AuthenticatedUser | undefined {
+//   const authString = sessionStorage.getItem(AUTH_USER_KEY)
+//   if (!authString) {
+//     return undefined
+//   }
+//   return JSON.parse(authString)
+// }
+
+// export function getAuthToken(): string | undefined {
+//   const authString = sessionStorage.getItem(AUTH_USER_KEY)
+//   if (!authString) {
+//     return undefined
+//   }
+//   const auth: AuthenticatedUser = JSON.parse(authString)
+//   return auth.token
+// }
+
+// export function isAuthenticated(): boolean {
+//   return getAuth() !== undefined
+// }
+
+
+
+async function getAuthFromResponse(response: Response): Promise<AuthenticatedUser> {
   const { token } : AuthTokenResponse = await response.json()
   if (!token) {
     throw Error("Malformed token response")
@@ -26,36 +77,48 @@ export async function setAuth(response: Response) {
   } catch (err) {
     throw Error("Error while parsing auth token")
   }
-
-  const user : AuthenticatedUser = {
+  
+  return {
     token: token,
     userId: payload.userId,
     username: payload.username
+  } as AuthenticatedUser;
+}
+
+// hook which mutates the auth context state
+function useUserAuth() {
+
+  const { user, setUser } = useContext(AuthContext)
+
+  useEffect(() => {
+    // try to fetch the user from sessionStorage
+    const userString = sessionStorage.getItem(AUTH_USER_KEY)
+    if (!userString) {
+      return
+    }
+
+    const userAuth: AuthenticatedUser = JSON.parse(userString)
+    setUser(userAuth)
+  }, [])
+
+  const setUserFromResponse = async (response: Response) => {
+    const user = await getAuthFromResponse(response)
+    sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
+    setUser(user)
   }
-  sessionStorage.setItem(AUTH_USER_KEY, JSON.stringify(user))
-}
 
-export function removeAuth() {
-  sessionStorage.removeItem(AUTH_USER_KEY)
-}
-
-export function getAuth(): AuthenticatedUser | undefined {
-  const authString = sessionStorage.getItem(AUTH_USER_KEY)
-  if (!authString) {
-    return undefined
+  const removeUser = () => {
+    sessionStorage.removeItem(AUTH_USER_KEY)
+    setUser(undefined)
   }
-  return JSON.parse(authString)
+
+  return { user, setUserFromResponse, removeUser };
 }
 
-export function getAuthToken(): string | undefined {
-  const authString = sessionStorage.getItem(AUTH_USER_KEY)
-  if (!authString) {
-    return undefined
-  }
-  const auth: AuthenticatedUser = JSON.parse(authString)
-  return auth.token
-}
+export default function useAuth() {
+  const { user, setUserFromResponse, removeUser } = useUserAuth()
 
-export function isAuthenticated(): boolean {
-  return getAuth() !== undefined
+  const storeUser = async (response: Response) => setUserFromResponse(response)
+
+  return { user, storeUser, removeUser };
 }

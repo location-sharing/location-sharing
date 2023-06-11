@@ -1,3 +1,4 @@
+
 export default function Alert(props: {
   title: string, 
   message: string,
@@ -5,8 +6,9 @@ export default function Alert(props: {
 }) {
   return (
     <div className="
-    absolute
-    top-2
+    relative
+    max-w-md
+    mx-auto
     bg-slate-300 border-t-4 
     border-sky-700 rounded-b
     text-sky-800 

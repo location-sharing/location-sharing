@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserCreate from "../../models/user/UserCreate";
 import { LINKS } from "../../router/router";
-import { removeAuth } from "../../services/auth";
 import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
 import ErrorAlert from "../base/alerts/ErrorAlert";
+import useAuth from "../../services/auth";
 
 
 const registerUrl = 'http://localhost:8082/api/user'
@@ -30,34 +30,39 @@ export default function RegisterForm() {
 
   const [error, setError] = useState<string>()
 
+  const { removeUser } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit: React.FormEventHandler = async event => {
 
     event.preventDefault();
+    let errorMessage = "An error occurred."
     try {
       const createData = {
         username, email, password
       }
-
       const response = await register(createData as UserCreate)
-      console.log(response);
-      console.log(await response.json());
 
       if (response.ok) {    
-        removeAuth()
+        removeUser()
         navigate(LINKS.DASHBOARD)
       } else {
-        setError("An error occurred.")      
+        setError(errorMessage)      
       }
     } catch (error: any) {
-      setError("An error occurred.")
+      setError(errorMessage)
     }
   }
 
   return (
-    <div>
-      { error ? <ErrorAlert title="Registration error" message={error} onClose={ () => setError(undefined) }/> : null}
+    <div className="relative">
+      { error ? 
+        <div className="relative bottom-12 w-full">
+          <ErrorAlert title="Registration error" message={error} onClose={ () => setError(undefined) }/> 
+        </div>
+        : 
+        null
+      }
 
       <div className="mx-auto w-full bg-theme-bg-1 rounded-lg shadow md:mt-0 sm:max-w-md xl:p-0 ">
         <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
