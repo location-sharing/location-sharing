@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { LINKS } from "../../router/router";
+import { LINKS, LinkType } from "../../router/router";
 import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
@@ -47,7 +47,7 @@ export default function LoginForm() {
       if (response.status === httpStatus.OK) {        
         await storeUser(response)
         // redirect to where the user came from
-        navigate(LINKS.DASHBOARD)
+        navigate(LINKS[LinkType.DASHBOARD].build())
       } else {
         if (response.status === httpStatus.UNAUTHORIZED) {
           errorMessage = "Username or password invalid."
@@ -93,7 +93,7 @@ export default function LoginForm() {
                 <Button type="submit">Sign in</Button>
                 <p className="text-sm text-gray-500 text-center">
                     Don’t have an account yet?
-                    <Link to={LINKS.REGISTER} className="font-medium text-primary-600 hover:underline"> Sign up</Link>
+                    <Link to={LINKS[LinkType.REGISTER].build()} className="font-medium text-primary-600 hover:underline"> Sign up</Link>
                 </p>
             </form>
         </div>

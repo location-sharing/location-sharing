@@ -1,4 +1,3 @@
-import Group from "./Group";
 import GroupUser from "./GroupUser";
 
 export default interface GroupDetail {

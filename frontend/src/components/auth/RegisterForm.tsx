@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserCreate from "../../models/user/UserCreate";
-import { LINKS } from "../../router/router";
+import { LINKS, LinkType } from "../../router/router";
 import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
@@ -45,7 +45,8 @@ export default function RegisterForm() {
 
       if (response.ok) {    
         removeUser()
-        navigate(LINKS.DASHBOARD)
+        // navigate(LINKS.LOGIN)
+        navigate(LINKS[LinkType.LOGIN].build())
       } else {
         setError(errorMessage)      
       }
@@ -93,7 +94,8 @@ export default function RegisterForm() {
                 <Button type="submit">Register</Button>
                 <p className="text-sm text-gray-500 text-center">
                   Already have an account? 
-                  <Link to={LINKS.LOGIN} className="font-medium text-primary-600 hover:underline"> Sign in</Link>
+                  {/* <Link to={LINKS.LOGIN} className="font-medium text-primary-600 hover:underline"> Sign in</Link> */}
+                  <Link to={LINKS[LinkType.LOGIN].build()} className="font-medium text-primary-600 hover:underline"> Sign in</Link>
                 </p>
             </form>
         </div>

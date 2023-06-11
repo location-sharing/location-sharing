@@ -1,16 +1,16 @@
 import httpStatus from "http-status"
 import { useEffect, useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
-import Button from "../components/base/Button"
-import Heading from "../components/base/Heading"
-import { List } from "../components/base/List"
-import ListItem from "../components/base/ListItem"
-import Tag from "../components/base/Tag"
-import ErrorAlert from "../components/base/alerts/ErrorAlert"
-import Group from "../models/group/Group"
-import { LINKS } from "../router/router"
-import useAuth from "../services/auth"
-import { getErrorFromResponse } from "../util/util"
+import { Link, useNavigate } from "react-router-dom"
+import Button from "../../components/base/Button"
+import Heading from "../../components/base/Heading"
+import { List } from "../../components/base/List"
+import ListItem from "../../components/base/ListItem"
+import Tag from "../../components/base/Tag"
+import ErrorAlert from "../../components/base/alerts/ErrorAlert"
+import Group from "../../models/group/Group"
+import { LINKS, LinkType } from "../../router/router"
+import useAuth from "../../services/auth"
+import { getErrorFromResponse } from "../../util/util"
 
 const groupsUrl = "http://localhost:8083/api/groups"
 
@@ -38,7 +38,7 @@ export default function GroupsPage() {
       if (response.status === httpStatus.OK) {  
         setGroups(await response.json())
       } else if (response.status === httpStatus.UNAUTHORIZED) {
-        navigate(LINKS.LOGIN)
+        navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(response)
         setError(errorResponse ? errorResponse.detail : "An error occurred")
@@ -63,7 +63,7 @@ export default function GroupsPage() {
           {
             groups?.map(group => {
               return (
-                <ListItem>
+                <ListItem key={group.id}>
                   <div className="flex flex-row flex-nowrap justify-between items-center">
                     <p className="text-gray-600">{group.name}</p>
                     <div className="flex flex-row flex-nowrap justify-between gap-x-4">
@@ -72,7 +72,7 @@ export default function GroupsPage() {
                         : 
                         null
                       }
-                      <Button onClick={() => navigate(`${LINKS.GROUPS}/${group.id}`)}>View</Button>
+                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: group.id}))}>View</Button>
                     </div>
                   </div>
                 </ListItem>
@@ -93,10 +93,14 @@ export default function GroupsPage() {
         : 
         null
       }
-      <Heading classes="mb-4">Groups</Heading>
-      <Link to={LINKS.GROUP_CREATE}>
-        <button className="px-3 py-2 text-white bg-green-700 rounded-md hover:bg-green-600">New Group</button>
-      </Link>
+      <div className="flex flex-row flex-wrap w-full justify-between items-center">
+        <Heading classes="mb-4">
+          Groups
+        </Heading>
+        <Link to={LINKS[LinkType.GROUP_CREATE].build()}>
+          <button className="px-3 py-2 mr-4 text-white bg-green-700 rounded-md hover:bg-green-600">New Group</button>
+        </Link>
+      </div>
       <div className="w-full h-full flex flex-row justify-center items-center gap-x-12">
         { groups === undefined ? 
           <div>

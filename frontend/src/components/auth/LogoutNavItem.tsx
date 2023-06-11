@@ -1,4 +1,4 @@
-import { LINKS } from "../../router/router";
+import { LINKS, LinkType } from "../../router/router";
 import useAuth from "../../services/auth";
 import Button from "../base/Button";
 import { useNavigate } from "react-router-dom"
@@ -11,7 +11,8 @@ export default function LogoutNavItem() {
 
   const logout = () => {
     removeUser()
-    navigate(LINKS.HOME)
+    // navigate(LINKS.HOME)
+    navigate(LINKS[LinkType.HOME].build())
   }
 
   return (

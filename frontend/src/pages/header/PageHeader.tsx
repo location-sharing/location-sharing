@@ -1,20 +1,20 @@
 import { Link } from "react-router-dom";
 import Heading from "../../components/base/Heading";
 import NavItem from "../../components/base/NavItem";
-import { LINKS } from "../../router/router";
+import { LINKS, LinkType } from "../../router/router";
 import useAuth from "../../services/auth";
 import LogoutNavItem from "../../components/auth/LogoutNavItem";
 
 export default function PageHeader() {
 
-  const { user, removeUser } = useAuth()
+  const { user } = useAuth()
 
   const loggedInLinks = () => {
     return (
-      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
-        <NavItem link={LINKS.HOME}>Home</NavItem>
-        <NavItem link={LINKS.DASHBOARD}>Dashboard</NavItem>
-        <NavItem link={LINKS.GROUPS}>Groups</NavItem>
+      <nav className='flex flex-row justify-evenly gap-3 items-center flex-wrap'>
+        <NavItem link={LINKS[LinkType.HOME].build()}>Home</NavItem>
+        <NavItem link={LINKS[LinkType.DASHBOARD].build()}>Dashboard</NavItem>
+        <NavItem link={LINKS[LinkType.GROUPS].build()}>Groups</NavItem>
         <LogoutNavItem/>
       </nav>
     )
@@ -22,37 +22,20 @@ export default function PageHeader() {
 
   const notLoggedInLinks = () => {
     return (
-      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
-        <NavItem link={LINKS.HOME}>Home</NavItem>
-        <NavItem link={LINKS.LOGIN}>Sign In</NavItem>
-        <NavItem link={LINKS.REGISTER}>Sign Up</NavItem>
+      <nav className='flex flex-row justify-evenly gap-3 items-center flex-wrap'>
+        <NavItem link={LINKS[LinkType.HOME].build()}>Home</NavItem>
+        <NavItem link={LINKS[LinkType.LOGIN].build()}>Sign In</NavItem>
+        <NavItem link={LINKS[LinkType.REGISTER].build()}>Sign Up</NavItem>
       </nav>
     )
   }
 
   return (
-    <header className="sticky top-0 flex flex-row justify-between items-center sm:w-11/12 mx-auto">
-      <Link to={LINKS.HOME}>
+    <header className="sticky top-0 flex flex-row justify-between items-center flex-wrap sm:w-11/12 mx-auto">
+      <Link to={LINKS[LinkType.HOME].build()}>
         <Heading>Demo</Heading>
       </Link>
-      <nav className='flex flex-row justify-evenly gap-x-3 items-center'>
-        {/* <NavItem link={LINKS.HOME}>Home</NavItem>
-
-        { user ? <NavItem link={LINKS.DASHBOARD}>Dashboard</NavItem> : null }
-        { user ? <NavItem link={LINKS.GROUPS}>Groups</NavItem> : null }
-        { user ? 
-          <NavItem link='#'>
-            <LogoutButton/>
-          </NavItem> 
-          : 
-          null 
-        }
-
-        { user !== undefined ? <NavItem link={LINKS.LOGIN}>Sign In</NavItem> : null }
-        { user !== undefined ? <NavItem link={LINKS.REGISTER}>Sign Up</NavItem> : null } */}
-
-        { user? loggedInLinks() : notLoggedInLinks() }
-      </nav>
+      { user? loggedInLinks() : notLoggedInLinks() }
     </header>
   )
 }

@@ -1,15 +1,15 @@
 import httpStatus from "http-status"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import Heading from "../components/base/Heading"
-import Input from "../components/base/Input"
-import InputLabel from "../components/base/InputLabel"
-import ErrorAlert from "../components/base/alerts/ErrorAlert"
-import GroupCreate from "../models/group/GroupCreate"
-import { LINKS } from "../router/router"
-import useAuth from "../services/auth"
-import { getErrorFromResponse } from "../util/util"
-import GroupDetail from "../models/group/GroupDetail"
+import Heading from "../../components/base/Heading"
+import Input from "../../components/base/Input"
+import InputLabel from "../../components/base/InputLabel"
+import ErrorAlert from "../../components/base/alerts/ErrorAlert"
+import GroupCreate from "../../models/group/GroupCreate"
+import { LINKS, LinkType } from "../../router/router"
+import useAuth from "../../services/auth"
+import { getErrorFromResponse } from "../../util/util"
+import GroupDetail from "../../models/group/GroupDetail"
 
 const groupsUrl = "http://localhost:8083/api/groups"
 
@@ -25,7 +25,7 @@ const createGroup = (group: GroupCreate, token: string) => fetch(
   }
 )
 
-export default function CreateGroupsPage() {
+export default function GroupCreatePage() {
 
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -47,10 +47,14 @@ export default function CreateGroupsPage() {
 
       const createdGroup: GroupDetail = await res.json()
 
-      navigate(`${LINKS.GROUPS}/${createdGroup.id}`, {state: createdGroup})
+      // navigate(`${LINKS.GROUPS}/${createdGroup.id}`, {state: createdGroup})
+      // navigate(createdGroup.id, { state: createdGroup })
+
+      navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: createdGroup.id}), { state: createdGroup })
 
     } else if (res.status == httpStatus.UNAUTHORIZED) {
-      navigate(LINKS.LOGIN)
+      // navigate(LINKS.LOGIN)
+      navigate(LINKS[LinkType.LOGIN].build())
     } else {
       const errorResponse = await getErrorFromResponse(res)
       setError(errorResponse ? errorResponse.detail : "An error occurred")
