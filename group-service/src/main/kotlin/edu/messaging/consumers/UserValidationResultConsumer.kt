@@ -34,7 +34,7 @@ class UserValidationResultConsumer(
             .doOnNext {
                 if (!it.valid) {
                     // TODO: send notification about the validation status
-                    log.warn("pending request for user ${it.user} invalid: ${it.message}")
+                    log.warn("pending request for user invalid: ${it.message}")
                 }
             }
             .filter { it.valid }

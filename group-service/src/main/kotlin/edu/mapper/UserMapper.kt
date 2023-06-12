@@ -10,7 +10,7 @@ object UserMapper {
     private fun from(entity: User): UserDto {
         return UserDto(
             entity.id.toString(),
-            entity.name
+            entity.username
         )
     }
 
@@ -20,8 +20,8 @@ object UserMapper {
 
     fun from(userEvent: UserEvent): User {
         return User(
-            UUID.fromString(userEvent.id),
-            userEvent.name
+            UUID.fromString(userEvent.userId),
+            userEvent.username
         )
     }
 }

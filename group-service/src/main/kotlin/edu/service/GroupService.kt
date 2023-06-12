@@ -9,6 +9,7 @@ import edu.mapper.UserMapper
 import edu.messaging.producers.UserValidationRequestProducer
 import edu.repository.GroupRepository
 import edu.repository.model.Group
+import edu.security.jwt.AuthenticatedUser
 import edu.service.exception.ValidationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -33,7 +34,7 @@ class GroupService(
 
     suspend fun create(dto: GroupCreateDto, ownerId: String): Group {
 
-        verifyMaxUserGroups(ownerId)
+        verifyMaxUserGroupsForUserId(ownerId)
 
         val entity = GroupMapper.toEntity(dto, ownerId)
         val group = withContext(Dispatchers.IO) {
@@ -41,7 +42,7 @@ class GroupService(
         }
 
         // add the owner of the group as a member (with the same flow as adding normal users)
-        addGroupUser(group.id.toString(), loggedInUserId = ownerId, userToAddId = ownerId)
+        addGroupUserById(group.id.toString(), loggedInUserId = ownerId, userToAddId = ownerId)
         return group
     }
 
@@ -67,7 +68,7 @@ class GroupService(
     /**
      * Sends out a validation event to fetch data about the user we're trying to add
      */
-    suspend fun addGroupUser(groupId: String, loggedInUserId: String, userToAddId: String) {
+    suspend fun addGroupUserById(groupId: String, loggedInUserId: String, userToAddId: String) {
         val group = findById(groupId)
         verifyGroupOwner(group, loggedInUserId)
 
@@ -77,7 +78,7 @@ class GroupService(
         }
 
         verifyMaxGroupUsers(group)
-        verifyMaxUserGroups(userToAddId)
+        verifyMaxUserGroupsForUserId(userToAddId)
 
         val metadata = UserValidationMetadata(
             initiatorUserId = loggedInUserId,
@@ -87,7 +88,38 @@ class GroupService(
             )
         )
         userValidationRequestProducer.sendWithResultLogging(
-            UserValidationRequestEvent(userToAddId, metadata)
+            UserValidationRequestEvent(
+                userId = userToAddId,
+                metadata = metadata)
+        )
+    }
+
+    /**
+     * Sends out a validation event to fetch data about the user we're trying to add
+     */
+    suspend fun addGroupUserByUsername(groupId: String, loggedInUserId: String, username: String) {
+        val group = findById(groupId)
+        verifyGroupOwner(group, loggedInUserId)
+
+        // user is already in the group
+        if (group.users.find { it.username == username } != null) {
+            return
+        }
+
+        verifyMaxGroupUsers(group)
+        verifyMaxUserGroupsForUsername(username)
+
+        val metadata = UserValidationMetadata(
+            initiatorUserId = loggedInUserId,
+            purpose = UserValidationPurpose.GROUP_ADD_USER,
+            mapOf(
+                AdditionalInfoKey.GROUP_ID to groupId
+            )
+        )
+        userValidationRequestProducer.sendWithResultLogging(
+            UserValidationRequestEvent(
+                username = username,
+                metadata = metadata)
         )
     }
 
@@ -107,19 +139,21 @@ class GroupService(
         }
     }
 
-    suspend fun removeGroupUser(groupId: String, loggedInUserId: String, removeUserId: String) {
-        // TODO: allow to remove yourself from a group, or if you are the owner, allow to kick anyone
-
+    suspend fun removeGroupUserById(groupId: String, loggedInUserId: String, removeUserId: String) {
         val group = userGroupService.findUserGroup(loggedInUserId, groupId)
 
-        if (loggedInUserId == group.ownerId && removeUserId == group.ownerId) {
+        val userIsGroupOwner = loggedInUserId == group.ownerId
+        val userTryingToRemoveItself = loggedInUserId == removeUserId
+
+        if (userIsGroupOwner && userTryingToRemoveItself) {
             throw ValidationException("You can't remove yourself because you are the owner of the group")
         }
 
-        if (loggedInUserId != group.ownerId && loggedInUserId != removeUserId) {
+        if (!userIsGroupOwner && !userTryingToRemoveItself) {
             throw ForbiddenException("Only the group owner can remove other members")
         }
 
+        // remaining scenarios are ok
         // owner of the group can remove any other group member, or any group member can remove themselves
         val removeUserUUID = UUID.fromString(removeUserId)
         group.users.removeIf { it.id == removeUserUUID }
@@ -129,7 +163,30 @@ class GroupService(
         }
     }
 
-    suspend fun changeOwner(groupId: String, loggedInUserId: String, newOwnerId: String) {
+    suspend fun removeGroupUserByUsername(groupId: String, user: AuthenticatedUser, removeUsername: String) {
+        val group = userGroupService.findUserGroup(user.id, groupId)
+
+        val userIsGroupOwner = user.id == group.ownerId
+        val userTryingToRemoveItself = user.username == removeUsername
+
+        if (userIsGroupOwner && userTryingToRemoveItself) {
+            throw ValidationException("You can't remove yourself because you are the owner of the group")
+        }
+
+        if (!userIsGroupOwner && !userTryingToRemoveItself) {
+            throw ForbiddenException("Only the group owner can remove other members")
+        }
+
+        // remaining scenarios are ok
+        // owner of the group can remove any other group member, or any group member can remove themselves
+        group.users.removeIf { it.username == removeUsername }
+
+        withContext(Dispatchers.IO) {
+            groupRepository.save(group)
+        }
+    }
+
+    suspend fun changeOwnerById(groupId: String, loggedInUserId: String, newOwnerId: String) {
         val group = findById(groupId)
         verifyGroupOwner(group, loggedInUserId)
 
@@ -145,7 +202,31 @@ class GroupService(
             )
         )
         userValidationRequestProducer.sendWithResultLogging(
-            UserValidationRequestEvent(newOwnerId, metadata)
+            UserValidationRequestEvent(
+                userId = newOwnerId,
+                metadata = metadata)
+        )
+    }
+
+    suspend fun changeOwnerByUsername(groupId: String, user: AuthenticatedUser, newOwnerUsername: String) {
+        val group = findById(groupId)
+        verifyGroupOwner(group, user.id)
+
+        if (user.username == newOwnerUsername) {
+            return
+        }
+
+        val metadata = UserValidationMetadata(
+            initiatorUserId = user.id,
+            purpose = UserValidationPurpose.GROUP_CHANGE_OWNER,
+            mapOf(
+                AdditionalInfoKey.GROUP_ID to groupId
+            )
+        )
+        userValidationRequestProducer.sendWithResultLogging(
+            UserValidationRequestEvent(
+                username = newOwnerUsername,
+                metadata = metadata)
         )
     }
 
@@ -155,10 +236,10 @@ class GroupService(
     suspend fun changeOwnerFromEvent(groupId: String, currentOwnerId: String, userEvent: UserEvent) {
         val group = findById(groupId)
 
-        group.ownerId = userEvent.id
+        group.ownerId = userEvent.userId
 
         // if the new owner is not in the group, add it
-        val newOwnerUUID = UUID.fromString(userEvent.id)
+        val newOwnerUUID = UUID.fromString(userEvent.userId)
         if (group.users.find { it.id == newOwnerUUID } == null) {
             group.users.add(UserMapper.from(userEvent))
         }
@@ -186,14 +267,23 @@ class GroupService(
 
     private fun verifyMaxGroupUsers(group: Group) {
         if (group.users.size >= maxUsersPerGroup) {
-            throw ValidationException("Groups can't have more than 20 users")
+            throw ValidationException("Groups can't have more than $maxUsersPerGroup users")
         }
     }
 
-    private suspend fun verifyMaxUserGroups(userId: String) {
-        val userGroups = userGroupService.findUserGroups(userId)
+    private suspend fun verifyMaxUserGroupsForUserId(userId: String) {
+        val userGroups = userGroupService.findUserGroupsById(userId)
+        verifyMaxUserGroups(userGroups)
+    }
+
+    private suspend fun verifyMaxUserGroupsForUsername(username: String) {
+        val userGroups = userGroupService.findUserGroupsByUsername(username)
+       verifyMaxUserGroups(userGroups)
+    }
+
+    private fun verifyMaxUserGroups(userGroups: Set<Group>) {
         if (userGroups.size >= maxGroupsPerUser) {
-            throw ValidationException("You can't have more than 20 groups as an owner")
+            throw ValidationException("You can't have more than $maxGroupsPerUser groups as an owner")
         }
     }
 }

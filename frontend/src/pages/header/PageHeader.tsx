@@ -13,7 +13,6 @@ export default function PageHeader() {
     return (
       <nav className='flex flex-row justify-evenly gap-3 items-center flex-wrap'>
         <NavItem link={LINKS[LinkType.HOME].build()}>Home</NavItem>
-        <NavItem link={LINKS[LinkType.DASHBOARD].build()}>Dashboard</NavItem>
         <NavItem link={LINKS[LinkType.GROUPS].build()}>Groups</NavItem>
         <LogoutNavItem/>
       </nav>

@@ -1,28 +1,20 @@
 import httpStatus from "http-status";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import Heading from "../../components/base/Heading";
-import GroupDetail from "../../models/group/GroupDetail";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Button from "../../components/base/Button";
+import Heading from "../../components/base/Heading";
 import Tag from "../../components/base/Tag";
 import ErrorAlert from "../../components/base/alerts/ErrorAlert";
+import GroupDetail from "../../models/group/GroupDetail";
 import { LINKS, LinkType } from "../../router/router";
 import useAuth from "../../services/auth";
 import { getErrorFromResponse } from "../../util/util";
-import GroupUser from "../../models/group/GroupUser";
+import { fetchGroup, removeGroupMember } from "../../services/groups";
 
-const fetchGroup = (groupId: string, token: string) => fetch(
-  `http://localhost:8083/api/groups/${groupId}`,
-  {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    },
-  }
-)
 
 export default function GroupDetailPage() {
 
-  const { user } = useAuth()
+  const { user, removeUser } = useAuth()
   const navigate = useNavigate()
 
   const location = useLocation()
@@ -34,31 +26,45 @@ export default function GroupDetailPage() {
   const loadGroup = async () => {
 
     // if there is no group in the state fetch the data
-    const groupFromLocation = location.state?.group
+    const groupFromLocation = location.state
 
-    if (!groupFromLocation) {
-      const res = await fetchGroup(groupId!, user!.token)
-
-      if (res.status === httpStatus.OK) {  
-        setGroup(await res.json())
-      } else if (res.status === httpStatus.UNAUTHORIZED) {
-        navigate(LINKS[LinkType.LOGIN].build())
+    try {
+      if (!groupFromLocation) {
+        const res = await fetchGroup(groupId!, user!.token)
+  
+        if (res.status === httpStatus.OK) {  
+          setGroup(await res.json())
+        } else if (res.status === httpStatus.UNAUTHORIZED) {
+          removeUser()
+          navigate(LINKS[LinkType.LOGIN].build())
+        } else {
+          const errorResponse = await getErrorFromResponse(res)
+          setError(errorResponse ? errorResponse.detail : "An error occurred")
+        }
       } else {
-        const errorResponse = await getErrorFromResponse(res)
-        setError(errorResponse ? errorResponse.detail : "An error occurred")
+        setGroup(groupFromLocation)
       }
+    } catch (err) {
+      setError("An error occurred")
+    }
+  }
+
+  const leaveGroup = async () => {
+    const res = await removeGroupMember(groupId!, user!.userId, user!.token)
+    if (res.ok) {  
+      navigate(LINKS[LinkType.GROUPS].build())
+    } else if (res.status === httpStatus.UNAUTHORIZED) {
+      removeUser()
+      navigate(LINKS[LinkType.LOGIN].build())
     } else {
-      setGroup(groupFromLocation)
+      const errorResponse = await getErrorFromResponse(res)
+      setError(errorResponse ? errorResponse.detail : "An error occurred")
     }
   }
 
   useEffect(() => { loadGroup() }, [])
 
-  const isOwner = (userId: string) => {
-    return userId === group?.ownerId
-  }
-
-
+  const isOwner = (userId: string) => userId === group?.ownerId
 
   const renderGroup = () => {
     return (
@@ -80,19 +86,36 @@ export default function GroupDetailPage() {
             </ul>
           </div>
         </div>
-        { isOwner(user!.userId) ?
-          <div className="flex flex-row flex-wrap justify-end gap-x-3">
-            <Button classes="mt-6 sm:w-1/4" onClick={() => navigate(LINKS[LinkType.GROUP_USERS].build({groupId: group!.id}), {state: {group}})}>
-              Manage members
-            </Button>
-            <Button classes="mt-6 sm:w-1/6" onClick={() => navigate(LINKS[LinkType.GROUP_EDIT].build({groupId: group!.id}), {state: {group}})}>
-              Edit
-            </Button>
-          </div>
-          
-          :
-          null
-        }
+        <div className="flex flex-row w-full flex-wrap justify-between items-center gap-x-3">
+
+          <Button classes="mt-6 sm:w-1/5" onClick={() => navigate(
+              LINKS[LinkType.GROUP_SESSIONS].build({groupId: group!.id})
+          )}>Start session</Button>
+          { isOwner(user!.userId) ?
+            // <div className="flex flex-row flex-wrap justify-end gap-x-3">
+            <div className="flex flex-row gap-x-3 mt-6 justify-end items-center w-2/3">
+              <Button classes="sm:w-44" onClick={() => navigate(
+                LINKS[LinkType.GROUP_USERS].build({groupId: group!.id}), 
+                {state: group}
+              )}>
+                Manage members
+              </Button>
+              <Button classes="sm:w-1/3" onClick={() => navigate(
+                LINKS[LinkType.GROUP_EDIT].build({groupId: group!.id}), 
+                {state: group}
+              )}>
+                Edit
+              </Button>
+            </div>
+            :
+            // <div className="flex flex-row flex-wrap justify-end gap-x-3">
+              <Button classes="mt-6 sm:w-1/4" onClick={leaveGroup}>
+                Leave group
+              </Button>
+            // </div>
+          }
+        </div>
+
       </div>
 
     )

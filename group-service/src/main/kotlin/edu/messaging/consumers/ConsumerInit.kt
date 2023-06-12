@@ -8,8 +8,7 @@ class ConsumerInit(
     groupUserValidationRequestConsumer: GroupUserValidationRequestConsumer,
 ){
     init {
-        userValidationResultConsumer.createFlux().subscribe()
-        groupUserValidationRequestConsumer.createFlux().subscribe()
-
+        userValidationResultConsumer.createFlux().retry().subscribe()
+        groupUserValidationRequestConsumer.createFlux().retry().subscribe()
     }
 }

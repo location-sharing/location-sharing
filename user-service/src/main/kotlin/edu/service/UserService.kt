@@ -29,6 +29,16 @@ class UserService(
         return UserMapper.from(user)
     }
 
+    suspend fun findByUsername(username: String): UserDto {
+        val user = withContext(Dispatchers.IO) {
+            userRepository
+                .findByUsername(username)
+                .orElseThrow { ResourceNotFoundException("User with username $username not found") }
+        }
+
+        return UserMapper.from(user)
+    }
+
     suspend fun register(createDto: UserCreateDto): UserDto {
 
         val password = passwordEncoder.encode(createDto.password)

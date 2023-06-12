@@ -8,6 +8,7 @@ import edu.mapper.GroupMapper
 import edu.security.jwt.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
+import edu.service.exception.ValidationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.http.ResponseEntity
@@ -25,7 +26,7 @@ class GroupController(
     suspend fun getUserGroups(
         @AuthenticationPrincipal user: AuthenticatedUser
     ): ResponseEntity<List<GroupDto>> {
-        val groups = userGroupService.findUserGroups(user.id)
+        val groups = userGroupService.findUserGroupsById(user.id)
         return ResponseEntity.ok(
             GroupMapper.toDtoList(groups)
         )
@@ -81,30 +82,51 @@ class GroupController(
     @PostMapping("/{groupId}/users")
     suspend fun addGroupUser(
         @PathVariable groupId: String,
-        @RequestParam userId: String,
+        @RequestParam(required = false) userId: String?,
+        @RequestParam(required = false) username: String?,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ): ResponseEntity<Void> {
-        groupService.addGroupUser(groupId, user.id, userId)
+        if (userId != null) {
+            groupService.addGroupUserById(groupId, user.id, userId)
+        } else if (username != null) {
+            groupService.addGroupUserByUsername(groupId, user.id, username)
+        } else {
+            throw ValidationException("Either userId or username URL parameters must be specified.")
+        }
         return ResponseEntity.accepted().build()
     }
 
     @DeleteMapping("/{groupId}/users")
     suspend fun removeGroupUser(
         @PathVariable groupId: String,
-        @RequestParam userId: String,
+        @RequestParam(required = false) userId: String?,
+        @RequestParam(required = false) username: String?,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ): ResponseEntity<Void> {
-        groupService.removeGroupUser(groupId, user.id, userId)
+        if (userId != null) {
+            groupService.removeGroupUserById(groupId, user.id, userId)
+        } else if (username != null) {
+            groupService.removeGroupUserByUsername(groupId, user, username)
+        } else {
+            throw ValidationException("Either userId or username URL parameters must be specified.")
+        }
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/{id}")
+    @PostMapping("/{id}/owner")
     suspend fun changeOwner(
         @PathVariable id: String,
-        @RequestParam userId: String,
+        @RequestParam(required = false) userId: String?,
+        @RequestParam(required = false) username: String?,
         @AuthenticationPrincipal user: AuthenticatedUser
     ): ResponseEntity<Void> {
-        groupService.changeOwner(id, user.id, userId)
+        if (userId != null) {
+            groupService.changeOwnerById(id, user.id, userId)
+        } else if (username != null) {
+            groupService.changeOwnerByUsername(id, user, username)
+        } else {
+            throw ValidationException("Either userId or username URL parameters must be specified.")
+        }
         return ResponseEntity.accepted().build()
     }
 }

@@ -11,17 +11,8 @@ import Group from "../../models/group/Group"
 import { LINKS, LinkType } from "../../router/router"
 import useAuth from "../../services/auth"
 import { getErrorFromResponse } from "../../util/util"
+import { fetchGroups } from "../../services/groups"
 
-const groupsUrl = "http://localhost:8083/api/groups"
-
-const fetchGroups = (token: string) => fetch(
-  groupsUrl,
-  {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  }
-)
 
 export default function GroupsPage() {
 
@@ -54,7 +45,7 @@ export default function GroupsPage() {
     if (groups?.length === 0) {
       return (
         <div>
-          <p>It seems you are not a member of a group yet.</p>
+          <p className="text-lg">It seems you are not a member of any group yet.</p>
         </div>
       )
     } else {
@@ -64,14 +55,15 @@ export default function GroupsPage() {
             groups?.map(group => {
               return (
                 <ListItem key={group.id}>
-                  <div className="flex flex-row flex-nowrap justify-between items-center">
-                    <p className="text-gray-600">{group.name}</p>
-                    <div className="flex flex-row flex-nowrap justify-between gap-x-4">
+                  <div className="flex flex-row flex-wrap justify-between items-center gap-4">
+                    <p className="text-gray-600 w-1/4">{group.name}</p>
+                    <div className="w-full sm:w-3/5 flex flex-row flex-nowrap justify-between gap-x-4">
                       { group.ownerId === user?.userId ? 
                         <Tag>Owner</Tag>
                         : 
                         null
                       }
+                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_SESSIONS].build({groupId: group.id}))}>Start Session</Button>
                       <Button onClick={() => navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: group.id}))}>View</Button>
                     </div>
                   </div>

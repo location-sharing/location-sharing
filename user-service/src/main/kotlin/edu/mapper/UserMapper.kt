@@ -8,18 +8,18 @@ object UserMapper {
 
     fun from(user: User): UserDto {
         return UserDto(
-            user.id.toString(),
-            user.username,
-            user.email,
+            id = user.id.toString(),
+            username = user.username,
+            email = user.email,
         )
     }
 
     fun from(createDto: UserCreateDto): User {
         return User(
-            null,
-            createDto.username,
-            createDto.email,
-            createDto.password
+            id = null,
+            username = createDto.username,
+            email = createDto.email,
+            password = createDto.password
         )
     }
 

@@ -46,8 +46,7 @@ export default function LoginForm() {
 
       if (response.status === httpStatus.OK) {        
         await storeUser(response)
-        // redirect to where the user came from
-        navigate(LINKS[LinkType.DASHBOARD].build())
+        navigate(LINKS[LinkType.GROUPS].build())
       } else {
         if (response.status === httpStatus.UNAUTHORIZED) {
           errorMessage = "Username or password invalid."

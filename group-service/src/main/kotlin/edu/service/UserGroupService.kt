@@ -11,10 +11,21 @@ import java.util.*
 class UserGroupService(
     private val userRepository: UserRepository
 ) {
-    suspend fun findUserGroups(userId: String): Set<Group> {
+    suspend fun findUserGroupsById(userId: String): Set<Group> {
         val uuid = UUID.fromString(userId)
         val user = withContext(Dispatchers.IO) {
             userRepository.findById(uuid)
+        }
+
+        return if (user.isPresent)
+            user.get().groups
+        else
+            setOf()
+    }
+
+    suspend fun findUserGroupsByUsername(username: String): Set<Group> {
+        val user = withContext(Dispatchers.IO) {
+            userRepository.findByUsername(username)
         }
 
         return if (user.isPresent)

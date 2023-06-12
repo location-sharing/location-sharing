@@ -10,20 +10,7 @@ import { LINKS, LinkType } from "../../router/router"
 import useAuth from "../../services/auth"
 import { getErrorFromResponse } from "../../util/util"
 import GroupDetail from "../../models/group/GroupDetail"
-
-const groupsUrl = "http://localhost:8083/api/groups"
-
-const createGroup = (group: GroupCreate, token: string) => fetch(
-  groupsUrl,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(group)
-  }
-)
+import { createGroup } from "../../services/groups"
 
 export default function GroupCreatePage() {
 
@@ -42,24 +29,18 @@ export default function GroupCreatePage() {
     }
 
     const res = await createGroup(group, user!.token)
-    if (res.status == httpStatus.OK) {
+    if (res.ok) {
       // TODO: redirect to group detail page
 
       const createdGroup: GroupDetail = await res.json()
-
-      // navigate(`${LINKS.GROUPS}/${createdGroup.id}`, {state: createdGroup})
-      // navigate(createdGroup.id, { state: createdGroup })
-
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: createdGroup.id}), { state: createdGroup })
 
     } else if (res.status == httpStatus.UNAUTHORIZED) {
-      // navigate(LINKS.LOGIN)
       navigate(LINKS[LinkType.LOGIN].build())
     } else {
       const errorResponse = await getErrorFromResponse(res)
       setError(errorResponse ? errorResponse.detail : "An error occurred")
     }
-
   }
 
   return (

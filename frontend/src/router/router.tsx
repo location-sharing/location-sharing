@@ -1,20 +1,18 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
-import ErrorBoundary from "../components/error-boundary/ErrorBoundary";
-import Dashboard from "../pages/Dashboard";
-import GroupsPage from '../pages/groups/GroupsPage';
+import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
-import ProtectedRoutes from './ProtectedRoutes';
-import HomePage from '../pages/HomePage';
 import GroupCreatePage from '../pages/groups/GroupCreatePage';
 import GroupDetailPage from '../pages/groups/GroupDetailPage';
 import GroupEditPage from '../pages/groups/GroupEditPage';
 import GroupUsersPage from '../pages/groups/GroupUsersPage';
+import GroupsPage from '../pages/groups/GroupsPage';
+import SessionPage from '../pages/sessions/SessionPage';
+import ProtectedRoutes from './ProtectedRoutes';
 
 export enum LinkType {
   HOME,
-  DASHBOARD,
   LOGIN,
   REGISTER,
   GROUPS,
@@ -22,21 +20,17 @@ export enum LinkType {
   GROUP_DETAIL,
   GROUP_EDIT,
   GROUP_USERS,
+  GROUP_SESSIONS,
 }
 
 const params = {
   GROUP_ID: ":groupId",
-  GROUP_USER_ID: ":groupUserId",
 }
 
 export const LINKS: {[key in LinkType]: {template: string, build: (params?: any) => string}} = {
   [LinkType.HOME]: {
     template: "/",
     build: () => LINKS[LinkType.HOME].template
-  },
-  [LinkType.DASHBOARD]: {
-    template: "/dashboard",
-    build: () => LINKS[LinkType.DASHBOARD].template
   },
   [LinkType.LOGIN]: {
     template: "/login",
@@ -56,16 +50,20 @@ export const LINKS: {[key in LinkType]: {template: string, build: (params?: any)
   },
   [LinkType.GROUP_DETAIL]: {
     template: `/groups/${params.GROUP_ID}`,
-    build: (buildParams: {groupId: string}) => LINKS[LinkType.GROUP_DETAIL].template.replace(params.GROUP_ID, buildParams.groupId)
+    build: (pathParams: {groupId: string}) => LINKS[LinkType.GROUP_DETAIL].template.replace(params.GROUP_ID, pathParams.groupId)
   },
   [LinkType.GROUP_EDIT]: {
     template: `/groups/${params.GROUP_ID}/edit`,
-    build: (buildParams: {groupId: string}) => LINKS[LinkType.GROUP_EDIT].template.replace(params.GROUP_ID, buildParams.groupId)
+    build: (pathParams: {groupId: string}) => LINKS[LinkType.GROUP_EDIT].template.replace(params.GROUP_ID, pathParams.groupId)
   },
   [LinkType.GROUP_USERS]: {
     template: `/groups/${params.GROUP_ID}/members`,
-    build: (buildParams: {groupId: string}) => LINKS[LinkType.GROUP_USERS].template.replace(params.GROUP_ID, buildParams.groupId)
+    build: (pathParams: {groupId: string}) => LINKS[LinkType.GROUP_USERS].template.replace(params.GROUP_ID, pathParams.groupId)
   },
+  [LinkType.GROUP_SESSIONS]: {
+    template: `/groups/${params.GROUP_ID}/sessions`,
+    build: (pathParams: {groupId: string}) => LINKS[LinkType.GROUP_SESSIONS].template.replace(params.GROUP_ID, pathParams.groupId)
+  }
 }
 
 const router = createBrowserRouter([
@@ -88,11 +86,6 @@ const router = createBrowserRouter([
         element: <ProtectedRoutes/>,
         children: [
           {
-            path: LINKS[LinkType.DASHBOARD].template,
-            element: <Dashboard/>,
-            errorElement: <ErrorBoundary/>
-          },
-          {
             path: LINKS[LinkType.GROUPS].template,
             element: <GroupsPage/>,
           },
@@ -112,6 +105,10 @@ const router = createBrowserRouter([
             path: LINKS[LinkType.GROUP_USERS].template,
             element: <GroupUsersPage />,
           },
+          {
+            path: LINKS[LinkType.GROUP_SESSIONS].template,
+            element: <SessionPage/>
+          }
         ]
       },
     ]

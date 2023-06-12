@@ -10,34 +10,21 @@ import GroupUpdate from "../../models/group/GroupUpdate"
 import { LINKS, LinkType } from "../../router/router"
 import useAuth from "../../services/auth"
 import { getErrorFromResponse } from "../../util/util"
-import Tag from "../../components/base/Tag"
-import GroupUser from "../../models/group/GroupUser"
+import { updateGroup } from "../../services/groups"
 
-
-const editGroup = (groupId: string, group: GroupUpdate, token: string) => fetch(
-  `http://localhost:8083/api/groups/${groupId}`,
-  {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    },
-    body: JSON.stringify(group)
-  }
-)
 
 export default function GroupEditPage() {
 
   const { user } = useAuth()
   const navigate = useNavigate()
   const { groupId } = useParams()
-  const { group } = useLocation().state
+  const groupFromLocation = useLocation().state
 
   const [error, setError] = useState<string>()
   const [groupName, setGroupName] = useState<string>()
 
   useEffect(() => {
-    setGroupName(group.name)
+    setGroupName(groupFromLocation.name)
   }, [])
 
   const handleSubmit: React.FormEventHandler = async (event) => {
@@ -47,7 +34,7 @@ export default function GroupEditPage() {
       name: groupName!
     }
 
-    const res = await editGroup(groupId!, group, user!.token)
+    const res = await updateGroup(groupId!, group, user!.token)
     if (res.status == httpStatus.OK) {
       const editedGroup: GroupDetail = await res.json()
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: editedGroup.id}), {state: editedGroup})
@@ -59,7 +46,7 @@ export default function GroupEditPage() {
     }
   }
 
-  const isOwner = () => user?.userId === group.ownerId
+  const isOwner = () => user?.userId === groupFromLocation.ownerId
 
   return (
     <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-1/2 mx-auto px-4">

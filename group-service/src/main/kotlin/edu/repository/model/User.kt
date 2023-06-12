@@ -10,17 +10,17 @@ class User() {
     @Id
     lateinit var id: UUID
 
-    @Column(nullable = false)
-    lateinit var name: String
+    @Column(nullable = false, unique = true)
+    lateinit var username: String
 
     @ManyToMany(mappedBy = "users", fetch = FetchType.EAGER)
     lateinit var groups: MutableSet<Group>
 
     constructor(
         id: UUID,
-        name: String,
+        username: String,
     ) : this() {
         this.id = id
-        this.name = name
+        this.username = username
     }
 }

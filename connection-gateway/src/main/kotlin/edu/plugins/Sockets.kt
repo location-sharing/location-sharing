@@ -14,9 +14,11 @@ import edu.util.objectMapper
 import edu.validation.GroupUserValidationService
 import edu.validation.isPending
 import edu.validation.isValid
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
@@ -40,9 +42,19 @@ fun Application.configureSockets() {
 
     routing {
 
-        authenticate(JwtConfig.JWT_AUTH_NAME) {
+        get("/") {
+            call.respondText { "Hello World" }
+        }
+
+//        authenticate(JwtConfig.JWT_AUTH_NAME) {
 
             webSocket("/group") {
+
+                val userToken = call.request.queryParameters["auth"]
+                if (userToken == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Token not present")
+                }
+
                 val user = call.principal<JWTPrincipal>()!!.toAuthenticatedUser()
                 val userId = user.id
 
@@ -97,7 +109,7 @@ fun Application.configureSockets() {
                     LOG.info("closed connection $this")
                 }
             }
-        }
+//        }
     }
 }
 
