@@ -1,8 +1,10 @@
 package edu.plugins
 
+import com.auth0.jwt.exceptions.JWTVerificationException
 import edu.models.ClientMessage
-import edu.security.JwtConfig
-import edu.security.toAuthenticatedUser
+import edu.repository.ConnectionStore
+import edu.security.AuthenticatedUser
+import edu.security.JwtUtils
 import edu.service.ConnectionService.isTheOnlyConnection
 import edu.service.ConnectionService.removeConnection
 import edu.service.ConnectionService.storeConnection
@@ -16,8 +18,6 @@ import edu.validation.isPending
 import edu.validation.isValid
 import io.ktor.http.*
 import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
@@ -28,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 
 private val LOG = LoggerFactory.getLogger("WebSocketLogger")
 
@@ -42,80 +43,131 @@ fun Application.configureSockets() {
 
     routing {
 
-        get("/") {
-            call.respondText { "Hello World" }
+        get("/active") {
+            val userToken = call.request.queryParameters["auth"]
+            if (userToken == null) {
+                LOG.info("closing connection, 'auth' request param not present")
+                call.respond(HttpStatusCode.Unauthorized)
+                return@get
+            }
+
+            try {
+                JwtUtils.verify(userToken)
+            } catch (e: JWTVerificationException) {
+                call.respond(HttpStatusCode.Unauthorized)
+                return@get
+            }
+
+            val groupId = call.request.queryParameters["groupId"]
+            if (groupId == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+
+            val groupUsersOnline = ConnectionStore.getGroupUsers(groupId)
+            call.respond(HttpStatusCode.OK, objectMapper.writeValueAsString(groupUsersOnline))
         }
 
-//        authenticate(JwtConfig.JWT_AUTH_NAME) {
+        webSocket("/group") {
 
-            webSocket("/group") {
+            LOG.info("got websocket request")
 
-                val userToken = call.request.queryParameters["auth"]
-                if (userToken == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Token not present")
-                }
+            val user = verifyAuthToken() ?: return@webSocket
 
-                val user = call.principal<JWTPrincipal>()!!.toAuthenticatedUser()
-                val userId = user.id
+            LOG.info("after verifying auth")
 
-                // TODO: we could send a notification event saying that the user is online
+            // TODO: we could send a notification event saying that the user is online
 
-                // validate the group
-                val groupId = call.request.queryParameters["groupId"]
+            // validate the group
+            val groupId = verifyGroup() ?: return@webSocket
 
-                if (groupId == null) {
-                    close(CloseReason(
-                        CloseReason.Codes.CANNOT_ACCEPT,
-                        "groupId request parameter cannot be null"
-                    ))
-                    return@webSocket
-                }
+            val connectionValid = AtomicBoolean(false)
+            if (!userGroupConnectionsEmpty(groupId, user)) {
+                // group membership already validated, but this particular connection has not been added
+                storeConnection(groupId, user, this)
+                LOG.info("received message from user: ${user.id}")
+                connectionValid.set(true)
+            } else {
+                validateGroupUserMembership(groupId, user.id) {
+                    LOG.info("group membership validation success, storing connection")
+                    storeConnection(groupId, user, this@webSocket)
 
-                if (!userGroupConnectionsEmpty(groupId, userId)) {
-                    // group membership already validated, but this particular connection has not been added
-                    storeConnection(groupId, userId, this)
-                    LOG.info("received message from user: ${user.id}")
-                } else {
-                    validateGroupUserMembership(groupId, userId) {
-                        LOG.info("group membership validation success, storing connection")
-                        storeConnection(groupId, userId, this@webSocket)
+                    sendConnectedNotificationEvent(groupId, user)
+                    LOG.info("user ${user.id} connected to group $groupId, connection ${this@webSocket} stored")
 
-                        sendConnectedNotificationEvent(groupId, userId)
-                        LOG.info("user $userId connected to group $groupId, connection ${this@webSocket} stored")
-                    }
-                }
-
-                try {
-                    for (frame in incoming) {
-                        val message = parseMessage(frame) ?: continue
-                        LOG.info("parsed message $message")
-
-                        sendMessageEvent(groupId, user.id, message.content)
-
-                    }
-                } catch (e: ClosedReceiveChannelException) {
-                    LOG.info("connection $this closed")
-                } catch (e: Exception) {
-                    LOG.warn("connection $this closed with exception: $e")
-                } finally {
-                    if (!userGroupConnectionsEmpty(groupId, user.id)) {
-                        removeConnection(groupId, user.id, this)
-                        LOG.info("removed connection $this")
-
-                        if (isTheOnlyConnection(groupId, user.id, this)) {
-                            sendDisconnectedNotificationEvent(groupId, user.id)
-                        }
-                    }
-                    LOG.info("closed connection $this")
+                    connectionValid.set(true)
                 }
             }
-//        }
+
+            try {
+                for (frame in incoming) {
+                    if (!connectionValid.get()) continue
+
+                    val message = parseMessage(frame) ?: continue
+                    LOG.info("parsed message $message")
+
+                    sendMessageEvent(groupId, user, message.payload)
+                }
+            } catch (e: ClosedReceiveChannelException) {
+                LOG.info("connection $this closed")
+            } catch (e: Exception) {
+                LOG.warn("connection $this closed with exception: $e")
+            } finally {
+                if (!userGroupConnectionsEmpty(groupId, user)) {
+                    if (isTheOnlyConnection(groupId, user, this)) {
+                        sendDisconnectedNotificationEvent(groupId, user)
+                    }
+                    removeConnection(groupId, user, this)
+                    LOG.info("removed connection $this")
+                }
+                LOG.info("closed connection $this")
+            }
+        }
     }
+}
+
+private suspend fun WebSocketServerSession.verifyAuthToken(): AuthenticatedUser? {
+    val userToken = call.request.queryParameters["auth"]
+    if (userToken == null) {
+        LOG.info("closing connection, 'auth' request param not present")
+        close(CloseReason(
+            CloseReason.Codes.CANNOT_ACCEPT,
+            "Token not present in 'auth' query param"
+        ))
+        return null
+    }
+
+    val decodedJwt = try {
+        JwtUtils.verify(userToken)
+    } catch (e: JWTVerificationException) {
+        LOG.info("closing connection, 'auth' token invalid")
+        close(CloseReason(
+            CloseReason.Codes.CANNOT_ACCEPT,
+            "Token invalid or expired"
+        ))
+        return null
+    }
+
+    LOG.info("auth token valid for connection $this")
+
+    return JwtUtils.toAuthenticatedUser(decodedJwt)
+}
+
+private suspend fun WebSocketServerSession.verifyGroup(): String? {
+    val groupId = call.request.queryParameters["groupId"]
+    if (groupId == null) {
+        close(CloseReason(
+            CloseReason.Codes.CANNOT_ACCEPT,
+            "groupId request parameter cannot be null"
+        ))
+        return null
+    }
+    return groupId
 }
 
 data class WebSocketMessageInvalidException(val title: String, val message: String)
 
-private suspend fun WebSocketSession.parseMessage(frame: Frame): ClientMessage? {
+private suspend fun WebSocketServerSession.parseMessage(frame: Frame): ClientMessage? {
     if (frame !is Frame.Text) {
         LOG.warn("incoming frame is not text, ignoring it")
         outgoing.send(Frame.Text(
@@ -139,7 +191,7 @@ private suspend fun WebSocketSession.parseMessage(frame: Frame): ClientMessage? 
     }
 }
 
-private suspend fun WebSocketSession.validateGroupUserMembership(
+private suspend fun WebSocketServerSession.validateGroupUserMembership(
     groupId: String,
     userId: String,
     onSuccess: () -> Unit

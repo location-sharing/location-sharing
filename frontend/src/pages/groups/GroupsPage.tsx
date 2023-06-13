@@ -9,26 +9,49 @@ import Tag from "../../components/base/Tag"
 import ErrorAlert from "../../components/base/alerts/ErrorAlert"
 import Group from "../../models/group/Group"
 import { LINKS, LinkType } from "../../router/router"
-import useAuth from "../../services/auth"
+import useAuth, { AuthenticatedUser } from "../../services/auth"
 import { getErrorFromResponse } from "../../util/util"
 import { fetchGroups } from "../../services/groups"
-
+import { fetchActiveGroupUsers } from "../../services/session"
 
 export default function GroupsPage() {
 
   const navigate = useNavigate()
   const [error, setError] = useState<string>()
-  const [groups, setGroups] = useState<Array<Group>>()
 
-  const { user } = useAuth()
+  interface ActiveUser {
+    id: string,
+    username: string
+  }
+  interface GroupWithActiveUsers extends Group {
+    activeUsers: Array<ActiveUser>
+  }
+  const [groupsWithActiveUsers, setGroups] = useState<Array<GroupWithActiveUsers>>()
+
+  const { user, removeUser } = useAuth()
 
   const loadGroups = async () => {
     try {
       const response = await fetchGroups(user!.token)
 
       if (response.status === httpStatus.OK) {  
-        setGroups(await response.json())
+
+        const groups: Array<Group> = await response.json()
+        const groupsWithActiveUsers = Array<GroupWithActiveUsers>()
+
+        for (let group of groups) {
+          const users = await loadActiveGroupUsers(group.id)
+          groupsWithActiveUsers.push({
+            id: group.id,
+            name: group.name,
+            ownerId: group.ownerId,
+            activeUsers: users
+          })
+        }
+
+        setGroups(groupsWithActiveUsers)  
       } else if (response.status === httpStatus.UNAUTHORIZED) {
+        removeUser()
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(response)
@@ -39,10 +62,29 @@ export default function GroupsPage() {
     }
   }
 
+  const loadActiveGroupUsers = async (groupId: string): Promise<Array<ActiveUser>> => {
+    try {
+      const response = await fetchActiveGroupUsers(groupId, user!.token)
+      if (response.status === httpStatus.OK) {  
+        return await response.json()
+      } else if (response.status === httpStatus.UNAUTHORIZED) {
+        removeUser()
+        navigate(LINKS[LinkType.LOGIN].build())
+      } else {
+        const errorResponse = await getErrorFromResponse(response)
+        setError(errorResponse ? errorResponse.detail : "An error occurred")
+      }
+    } catch (err) {
+      setError("An error occurred.")
+    }
+    return []
+  }
+  
+
   useEffect(() => { loadGroups() }, [])
 
   const renderGroups = () => {
-    if (groups?.length === 0) {
+    if (groupsWithActiveUsers?.length === 0) {
       return (
         <div>
           <p className="text-lg">It seems you are not a member of any group yet.</p>
@@ -52,18 +94,36 @@ export default function GroupsPage() {
       return (
         <List>
           {
-            groups?.map(group => {
+            groupsWithActiveUsers?.map(group => {
               return (
                 <ListItem key={group.id}>
                   <div className="flex flex-row flex-wrap justify-between items-center gap-4">
-                    <p className="text-gray-600 w-1/4">{group.name}</p>
+                    <div className="flex- flex-col w-1/3">
+                      <p className="text-gray-600 w-1/4">{group.name}</p>
+                      { group.activeUsers.length > 0 ?
+                        <div className="grid grid-cols-2 ">
+                          <p>Online:</p>
+                          <ul>
+                            {group.activeUsers.map(user => <li key={user.id}>{user.username}</li>)}
+                          </ul>
+                        </div>
+                        :
+                        null
+                      }
+                    </div>
                     <div className="w-full sm:w-3/5 flex flex-row flex-nowrap justify-between gap-x-4">
                       { group.ownerId === user?.userId ? 
                         <Tag>Owner</Tag>
                         : 
                         null
                       }
-                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_SESSIONS].build({groupId: group.id}))}>Start Session</Button>
+                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_SESSIONS].build({groupId: group.id}))}>
+                        {group.activeUsers.length > 0 ?
+                          "Join Session"
+                          :
+                          "Start Session"
+                        }
+                      </Button>
                       <Button onClick={() => navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: group.id}))}>View</Button>
                     </div>
                   </div>
@@ -94,7 +154,7 @@ export default function GroupsPage() {
         </Link>
       </div>
       <div className="w-full h-full flex flex-row justify-center items-center gap-x-12">
-        { groups === undefined ? 
+        { groupsWithActiveUsers === undefined ? 
           <div>
             <h3>Loading...</h3>
           </div>

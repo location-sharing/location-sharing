@@ -15,7 +15,7 @@ import { updateGroup } from "../../services/groups"
 
 export default function GroupEditPage() {
 
-  const { user } = useAuth()
+  const { user, removeUser } = useAuth()
   const navigate = useNavigate()
   const { groupId } = useParams()
   const groupFromLocation = useLocation().state
@@ -39,6 +39,7 @@ export default function GroupEditPage() {
       const editedGroup: GroupDetail = await res.json()
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: editedGroup.id}), {state: editedGroup})
     } else if (res.status == httpStatus.UNAUTHORIZED) {
+      removeUser()
       navigate(LINKS[LinkType.LOGIN].build())
     } else {
       const errorResponse = await getErrorFromResponse(res)

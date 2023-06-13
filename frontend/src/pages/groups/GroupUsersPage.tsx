@@ -17,7 +17,7 @@ import { getErrorFromResponse } from "../../util/util"
 
 export default function GroupUsersPage() {
 
-  const { user } = useAuth()
+  const { user, removeUser } = useAuth()
   const navigate = useNavigate()
 
   const groupFromLocation = useLocation().state
@@ -44,6 +44,7 @@ export default function GroupUsersPage() {
         setNotification(`If user '${memberName}' exists, it should be added within a couple seconds.`)
   
       } else if (res.status == httpStatus.UNAUTHORIZED) {
+        removeUser()
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(res)

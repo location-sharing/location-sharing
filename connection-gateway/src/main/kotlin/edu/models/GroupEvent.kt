@@ -3,6 +3,7 @@ package edu.models
 data class GroupEvent(
     val groupId: String,
     val userId: String,
+    val username: String,
     val type: GroupEventType,
     val payload: String? = null
 )

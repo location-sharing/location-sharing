@@ -14,7 +14,7 @@ import { createGroup } from "../../services/groups"
 
 export default function GroupCreatePage() {
 
-  const { user } = useAuth()
+  const { user, removeUser } = useAuth()
   const navigate = useNavigate()
 
   const [error, setError] = useState<string>()
@@ -36,6 +36,7 @@ export default function GroupCreatePage() {
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: createdGroup.id}), { state: createdGroup })
 
     } else if (res.status == httpStatus.UNAUTHORIZED) {
+      removeUser()
       navigate(LINKS[LinkType.LOGIN].build())
     } else {
       const errorResponse = await getErrorFromResponse(res)

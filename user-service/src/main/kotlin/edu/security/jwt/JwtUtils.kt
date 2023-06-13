@@ -13,31 +13,37 @@ import java.time.Instant
 @Component
 class JwtUtils(
     @Value("\${jwt.secret}")
-    private val jwtSecret: String
+    private val jwtSecret: String,
+
+    @Value("\${jwt.issuer:PT2H}")
+    private val jwtIssuer: String,
+
+    @Value("\${jwt.audience:PT2H}")
+    private val jwtAudience: String,
+
+    @Value("\${jwt.expiresInDuration:PT2H}")
+    private val jwtDuration: Duration,
 ) {
 
     companion object {
         val sign: (secret: String) -> Algorithm = { secret -> Algorithm.HMAC384(secret) }
-
-        private const val JWT_ISSUER = "location-sharing-app"
-        private const val JWT_AUDIENCE = "location-sharing-app"
     }
 
     private val jwtVerifier: JWTVerifier by lazy {
         JWT.require(sign(jwtSecret))
-            .withIssuer(JWT_ISSUER)
-            .withAudience(JWT_AUDIENCE)
+            .withIssuer(jwtIssuer)
+            .withAudience(jwtAudience)
             .withClaimPresence(JwtClaim.USER_ID.keyName)
             .withClaimPresence(JwtClaim.USER_NAME.keyName)
             .build()
     }
 
     fun generate(user: User): String {
-        val expiresAt = Instant.now().plus(Duration.ofHours(2))
+        val expiresAt = Instant.now().plus(jwtDuration)
         return JWT.create()
             .withSubject(user.username)
-            .withIssuer(JWT_ISSUER)
-            .withAudience(JWT_AUDIENCE)
+            .withIssuer(jwtIssuer)
+            .withAudience(jwtAudience)
             .withExpiresAt(expiresAt)
             .withClaim(JwtClaim.USER_ID.keyName, user.id.toString())
             .withClaim(JwtClaim.USER_NAME.keyName, user.username)

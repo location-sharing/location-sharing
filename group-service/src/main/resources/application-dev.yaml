@@ -18,7 +18,10 @@ logging:
     root: info
     sql: debug
 
-jwt.secret: "random-key-from-env-var"
+jwt:
+  secret: "random-key-from-env-var"
+  issuer: "location-sharing-app"
+  audience: "location-sharing-app"
 
 cors:
   mappings:

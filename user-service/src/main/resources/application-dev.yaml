@@ -18,7 +18,13 @@ logging:
       springframework:
         security: debug
 
-jwt.secret: "random-key-from-env-var"
+jwt:
+  secret: "random-key-from-env-var"
+  issuer: "location-sharing-app"
+  audience: "location-sharing-app"
+
+  expiresInDuration: "PT12H"
+
 
 cors:
   mappings:

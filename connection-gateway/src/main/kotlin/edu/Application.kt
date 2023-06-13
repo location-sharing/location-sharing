@@ -1,7 +1,7 @@
 package edu
 
 import edu.messaging.consumers.startConsumers
-import edu.plugins.configureJwtAuth
+import edu.plugins.configureCors
 import edu.plugins.configureSockets
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
@@ -11,7 +11,7 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
-    configureJwtAuth()
+    configureCors()
     configureSockets()
     startConsumers()
 }

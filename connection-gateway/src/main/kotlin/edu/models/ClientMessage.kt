@@ -1,5 +1,5 @@
 package edu.models
 
 data class ClientMessage(
-    val content: String,
+    val payload: String,
 )

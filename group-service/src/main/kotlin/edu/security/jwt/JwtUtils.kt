@@ -10,20 +10,23 @@ import org.springframework.stereotype.Component
 @Component
 class JwtUtils(
     @Value("\${jwt.secret}")
-    private val jwtSecret: String
+    private val jwtSecret: String,
+
+    @Value("\${jwt.issuer:PT2H}")
+    private val jwtIssuer: String,
+
+    @Value("\${jwt.audience:PT2H}")
+    private val jwtAudience: String,
 ) {
 
     companion object {
         val sign: (secret: String) -> Algorithm = { secret -> Algorithm.HMAC384(secret) }
-
-        private const val JWT_ISSUER = "location-sharing-app"
-        private const val JWT_AUDIENCE = "location-sharing-app"
     }
 
     private val jwtVerifier: JWTVerifier by lazy {
         JWT.require(sign(jwtSecret))
-            .withIssuer(JWT_ISSUER)
-            .withAudience(JWT_AUDIENCE)
+            .withIssuer(jwtIssuer)
+            .withAudience(jwtAudience)
             .withClaimPresence(JwtClaim.USER_ID.keyName)
             .withClaimPresence(JwtClaim.USER_NAME.keyName)
             .build()
