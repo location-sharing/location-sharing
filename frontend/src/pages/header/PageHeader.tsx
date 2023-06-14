@@ -30,11 +30,13 @@ export default function PageHeader() {
   }
 
   return (
-    <header className="sticky top-0 flex flex-row justify-between items-center flex-wrap sm:w-11/12 mx-auto">
-      <Link to={LINKS[LinkType.HOME].build()}>
-        <Heading>Demo</Heading>
-      </Link>
-      { user? loggedInLinks() : notLoggedInLinks() }
+    <header className="sticky top-0 z-50 bg-white w-full">
+      <div className="flex flex-row justify-between items-center flex-wrap mx-auto sm:w-11/12">
+        <Link to={LINKS[LinkType.HOME].build()}>
+          <Heading>Demo</Heading>
+        </Link>
+        { user? loggedInLinks() : notLoggedInLinks() }
+      </div>
     </header>
   )
 }

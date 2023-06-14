@@ -33,7 +33,14 @@ export function generateRandomString(length: number) {
     for ( let i = 0; i < length; i++ ) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-
     return result;
+}
+
+export function generateRandomPastelColor() {
+  // appropriate saturation & lightness values give a pastel look
+  return `hsl(
+    ${360 * Math.random()},
+    ${10 + 70 * Math.random()}%,
+    70%)`
 }
 

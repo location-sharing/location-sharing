@@ -111,7 +111,7 @@ export default function GroupsPage() {
                         null
                       }
                     </div>
-                    <div className="w-full sm:w-3/5 flex flex-row flex-nowrap justify-between gap-x-4">
+                    <div className="w-full sm:w-3/5 flex flex-row flex-nowrap justify-end gap-x-3">
                       { group.ownerId === user?.userId ? 
                         <Tag>Owner</Tag>
                         : 

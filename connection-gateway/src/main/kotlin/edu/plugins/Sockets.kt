@@ -68,13 +68,59 @@ fun Application.configureSockets() {
             call.respond(HttpStatusCode.OK, objectMapper.writeValueAsString(groupUsersOnline))
         }
 
+        webSocket("/test") {
+            LOG.info("TEST: got websocket request")
+
+            val username = call.request.queryParameters["username"]
+            val userId = call.request.queryParameters["userId"]
+            if (username == null || userId == null) {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "username or userId query param not present"))
+                return@webSocket
+            }
+
+            val user = AuthenticatedUser(userId, username)
+
+            // validate the group
+            val groupId = verifyGroup() ?: return@webSocket
+
+            if (!userGroupConnectionsEmpty(groupId, user)) {
+                // group membership already validated, but this particular connection has not been added
+                storeConnection(groupId, user, this)
+                LOG.info("TEST: received message from user: ${user.id}")
+            } else {
+                LOG.info("TEST: group membership validation skipped, storing connection")
+                storeConnection(groupId, user, this@webSocket)
+
+                sendConnectedNotificationEvent(groupId, user)
+                LOG.info("user ${user.id} connected to group $groupId, connection ${this@webSocket} stored")
+            }
+
+            try {
+                for (frame in incoming) {
+                    val message = parseMessage(frame) ?: continue
+                    LOG.info("TEST: parsed message $message")
+                    sendMessageEvent(groupId, user, message.payload)
+                }
+            } catch (e: ClosedReceiveChannelException) {
+                LOG.info("connection $this closed")
+            } catch (e: Exception) {
+                LOG.warn("connection $this closed with exception: $e")
+            } finally {
+                if (!userGroupConnectionsEmpty(groupId, user)) {
+                    if (isTheOnlyConnection(groupId, user, this)) {
+                        sendDisconnectedNotificationEvent(groupId, user)
+                    }
+                    removeConnection(groupId, user, this)
+                    LOG.info("removed connection $this")
+                }
+                LOG.info("closed connection $this")
+            }
+        }
+
         webSocket("/group") {
 
-            LOG.info("got websocket request")
-
+            LOG.info("incoming websocket request")
             val user = verifyAuthToken() ?: return@webSocket
-
-            LOG.info("after verifying auth")
 
             // TODO: we could send a notification event saying that the user is online
 

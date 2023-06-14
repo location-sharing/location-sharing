@@ -1,4 +1,3 @@
-import { LatLngExpression } from "leaflet"
 
 // this format is needed by the server
 export interface ClientMessage {
