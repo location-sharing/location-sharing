@@ -2,6 +2,7 @@ import { GeolocationPositionData } from "../../models/message/ClientMessage"
 
 export interface PositionMarker {
   iconDOMId: string,
+  color: string,
   marker: L.Marker
 }
 

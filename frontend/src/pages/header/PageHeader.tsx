@@ -12,8 +12,8 @@ export default function PageHeader() {
   const loggedInLinks = () => {
     return (
       <nav className='flex flex-row justify-evenly gap-3 items-center flex-wrap'>
-        <NavItem link={LINKS[LinkType.HOME].build()}>Home</NavItem>
-        <NavItem link={LINKS[LinkType.GROUPS].build()}>Groups</NavItem>
+        <NavItem to={LINKS[LinkType.HOME].build()}>Home</NavItem>
+        <NavItem to={LINKS[LinkType.GROUPS].build()}>Groups</NavItem>
         <LogoutNavItem/>
       </nav>
     )
@@ -22,9 +22,9 @@ export default function PageHeader() {
   const notLoggedInLinks = () => {
     return (
       <nav className='flex flex-row justify-evenly gap-3 items-center flex-wrap'>
-        <NavItem link={LINKS[LinkType.HOME].build()}>Home</NavItem>
-        <NavItem link={LINKS[LinkType.LOGIN].build()}>Sign In</NavItem>
-        <NavItem link={LINKS[LinkType.REGISTER].build()}>Sign Up</NavItem>
+        <NavItem to={LINKS[LinkType.HOME].build()}>Home</NavItem>
+        <NavItem to={LINKS[LinkType.LOGIN].build()}>Sign In</NavItem>
+        <NavItem to={LINKS[LinkType.REGISTER].build()}>Sign Up</NavItem>
       </nav>
     )
   }

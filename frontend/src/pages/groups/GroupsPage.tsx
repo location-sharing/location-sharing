@@ -9,10 +9,10 @@ import Tag from "../../components/base/Tag"
 import ErrorAlert from "../../components/base/alerts/ErrorAlert"
 import Group from "../../models/group/Group"
 import { LINKS, LinkType } from "../../router/router"
-import useAuth, { AuthenticatedUser } from "../../services/auth"
-import { getErrorFromResponse } from "../../util/util"
+import useAuth from "../../services/auth"
 import { fetchGroups } from "../../services/groups"
 import { fetchActiveGroupUsers } from "../../services/session"
+import { getErrorFromResponse } from "../../util/util"
 
 export default function GroupsPage() {
 
@@ -117,14 +117,14 @@ export default function GroupsPage() {
                         : 
                         null
                       }
-                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_SESSIONS].build({groupId: group.id}))}>
+                      <Button btnType="basic" onClick={() => navigate(LINKS[LinkType.GROUP_SESSIONS].build({groupId: group.id}))}>
                         {group.activeUsers.length > 0 ?
                           "Join Session"
                           :
                           "Start Session"
                         }
                       </Button>
-                      <Button onClick={() => navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: group.id}))}>View</Button>
+                      <Button btnType="basic" onClick={() => navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: group.id}))}>View</Button>
                     </div>
                   </div>
                 </ListItem>
@@ -146,7 +146,7 @@ export default function GroupsPage() {
         null
       }
       <div className="flex flex-row flex-wrap w-full justify-between items-center">
-        <Heading classes="mb-4">
+        <Heading className="mb-4">
           Groups
         </Heading>
         <Link to={LINKS[LinkType.GROUP_CREATE].build()}>

@@ -105,12 +105,16 @@ const router = createBrowserRouter([
             path: LINKS[LinkType.GROUP_USERS].template,
             element: <GroupUsersPage />,
           },
-          {
-            path: LINKS[LinkType.GROUP_SESSIONS].template,
-            element: <SessionPage/>
-          }
+          // {
+          //   path: LINKS[LinkType.GROUP_SESSIONS].template,
+          //   element: <SessionPage/>
+          // }
         ]
       },
+      {
+        path: LINKS[LinkType.GROUP_SESSIONS].template,
+        element: <SessionPage/>
+      }
     ]
   },
 ]);

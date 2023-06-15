@@ -47,8 +47,6 @@ export default function GroupEditPage() {
     }
   }
 
-  const isOwner = () => user?.userId === groupFromLocation.ownerId
-
   return (
     <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-1/2 mx-auto px-4">
       { error ? 
@@ -58,7 +56,7 @@ export default function GroupEditPage() {
         : 
         null
       }
-      <Heading classes="mb-4">Edit group</Heading>
+      <Heading className="mb-4">Edit group</Heading>
       <div className="w-full h-1/2 border border-solid ring-1 ring-slate-50 rounded-md flex flex-col justify-center">
         <form onSubmit={async e => handleSubmit(e)} className="w-1/2 mx-auto flex flex-col gap-y-4 justify-center">
           <div>

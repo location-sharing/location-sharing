@@ -121,7 +121,7 @@ export default function GroupUsersPage() {
         : 
         null
       }
-      <Heading classes="mb-4">Manage group members</Heading>
+      <Heading className="mb-4">Manage group members</Heading>
       <div className="w-full h-full border border-solid ring-1 ring-slate-50 rounded-md">
         
         <div className="w-3/4 h-full flex flex-col gap-y-4 mx-auto">

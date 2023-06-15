@@ -88,19 +88,19 @@ export default function GroupDetailPage() {
         </div>
         <div className="flex flex-row w-full flex-wrap justify-between items-center gap-x-3">
 
-          <Button classes="mt-6 sm:w-1/5" onClick={() => navigate(
+          <Button btnType="basic" className="mt-6 sm:w-1/5" onClick={() => navigate(
               LINKS[LinkType.GROUP_SESSIONS].build({groupId: group!.id})
           )}>Start session</Button>
           { isOwner(user!.userId) ?
             // <div className="flex flex-row flex-wrap justify-end gap-x-3">
             <div className="flex flex-row gap-x-3 mt-6 justify-end items-center w-2/3">
-              <Button classes="sm:w-44" onClick={() => navigate(
+              <Button btnType="basic" className="sm:w-44" onClick={() => navigate(
                 LINKS[LinkType.GROUP_USERS].build({groupId: group!.id}), 
                 {state: group}
               )}>
                 Manage members
               </Button>
-              <Button classes="sm:w-1/3" onClick={() => navigate(
+              <Button btnType="basic" className="sm:w-1/3" onClick={() => navigate(
                 LINKS[LinkType.GROUP_EDIT].build({groupId: group!.id}), 
                 {state: group}
               )}>
@@ -108,14 +108,11 @@ export default function GroupDetailPage() {
               </Button>
             </div>
             :
-            // <div className="flex flex-row flex-wrap justify-end gap-x-3">
-              <Button classes="mt-6 sm:w-1/4" onClick={leaveGroup}>
-                Leave group
-              </Button>
-            // </div>
+            <Button btnType="danger" className="mt-6 sm:w-1/4" onClick={leaveGroup}>
+              Leave group
+            </Button>
           }
         </div>
-
       </div>
 
     )
@@ -130,16 +127,14 @@ export default function GroupDetailPage() {
         : 
         null
       }
-      <Heading classes="mb-4">Group details</Heading>
-      {/* <div className="w-full h-full flex flex-col border border-solid border-red-500"> */}
-        { group === undefined ? 
-          <div>
-            <h3>Loading...</h3>
-          </div>
-          :
-          renderGroup()
-        }
-      {/* </div> */}
+      <Heading className="mb-4">Group details</Heading>
+      { group === undefined ? 
+        <div>
+          <h3>Loading...</h3>
+        </div>
+        :
+        renderGroup()
+      }
     </section>
   )
 }

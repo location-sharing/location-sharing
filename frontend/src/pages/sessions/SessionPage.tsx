@@ -12,14 +12,22 @@ import { getSessionTestWebSocket } from "../../services/session";
 import Map from "./Map";
 import { PositionMarker, UserPosition, UserPositions } from "./Positions";
 import "./SessionPage.css";
-import { generateRandomPastelColor, generateRandomString } from "../../util/util";
+import { distanceInKm, generateRandomPastelColor, generateRandomString } from "../../util/util";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // =============================  HELPER FUNCTIONS  =============================
-const buildPositionMarker = (initialPosition: GeolocationPositionData, username: string): PositionMarker => {
+const buildPositionMarker = (
+  initialPosition: GeolocationPositionData, 
+  username: string,
+  color: string,
+  onMarkerClick: L.LeafletMouseEventHandlerFn
+): PositionMarker => {
   const iconDOMId = generateRandomString(12)
   const iconMarkup = renderToStaticMarkup(
-    <div id={iconDOMId} className={`-top-[23px] border-[12px] bg-transparent border-solid rounded-ss-[50%] rounded-se-[50%] rounded-ee-[50%] absolute w-6 h-6 transform -rotate-45 ring-1 ring-slate-500 shadow-md shadow-gray-500`}></div>
+    <div 
+      id={iconDOMId} 
+      className={`-top-[23px] border-[12px] bg-transparent border-solid rounded-ss-[50%] rounded-se-[50%] rounded-ee-[50%] absolute w-6 h-6 transform -rotate-45 ring-1 ring-slate-500 shadow-md shadow-gray-400`}
+    ></div>
   )
   const icon =  L.divIcon({
     className: 'map-icon',
@@ -34,9 +42,11 @@ const buildPositionMarker = (initialPosition: GeolocationPositionData, username:
       initialPosition.coords.longitude
     ], 
     { icon }
-  ).bindTooltip(`${username}`)
+  )
+  .bindTooltip(`${username}`)
+  .on('click', onMarkerClick)
 
-  return { iconDOMId, marker }
+  return { iconDOMId, marker, color }
 }
 
 const setPositionMarkerColor = (positionMarker: PositionMarker, color: string) => {
@@ -63,6 +73,9 @@ export default function SessionPage(){
   const [broadcastMyPosition, setBroadcastMyPosition] = useState<boolean>(false)
   const [userToWatch, setUserToWatch] = useState<string>()
   const [showMarkers, setShowMarkers] = useState<boolean>(false)
+  const [showStatsUsername, setShowStatsUsername] = useState<string>()
+  const [showStatsPane, setShowStatsPane] = useState<boolean>(false)
+  const [showUsersPane, setShowUsersPane] = useState<boolean>(false)
 
   const [locationEventLengthLimit, setLocationEventLengthLimit] = useState<number>(20)
 
@@ -95,12 +108,8 @@ export default function SessionPage(){
   // ==================  WebSocket   ==================
   // starts to listen to the messages of others
   const startWs = async () => {
-    if (!groupId) {
-      setError("The group does not exist")
-      return
-    }
     // const ws = getSessionWebSocket(groupId, user!.token)
-    const ws = getSessionTestWebSocket(groupId, user!.userId, user!.username)
+    const ws = getSessionTestWebSocket(groupId!, user!.userId, user!.username)
     ws.onopen = (event) => {
       console.log("websocket handshake done");
     }
@@ -234,7 +243,15 @@ export default function SessionPage(){
       } else {
         console.log(`${username} doesn't have an entry, generating one`);
         
-        const positionMarker = buildPositionMarker(position, username)
+        const positionMarker = buildPositionMarker(
+          position, 
+          username, 
+          generateRandomPastelColor(),
+          () => {
+            setShowStatsUsername(username)
+            setShowStatsPane(true)
+          }
+        )
         const newUserPosition: UserPosition = {
           username: username,
           positionMarker: positionMarker,
@@ -292,8 +309,7 @@ export default function SessionPage(){
       const positionMarker = userPositions[username]?.positionMarker
       if (positionMarker && positionMarker.marker) {
         if (showMarkers && map) {
-          positionMarker.marker.addTo(map)
-          setPositionMarkerColor(positionMarker, generateRandomPastelColor())
+          addMarkerToMap(positionMarker)
         } else {
           positionMarker.marker.remove()
         }
@@ -305,70 +321,202 @@ export default function SessionPage(){
   const addMarkerToMap = (positionMarker: PositionMarker) => {
     if (map) {
       positionMarker.marker.addTo(map)
-      setPositionMarkerColor(positionMarker, generateRandomPastelColor())
+      setPositionMarkerColor(positionMarker, positionMarker.color)
     } else {
       setError("Marker could not be added to the map.")
     }
   }
 
+  // ============================ UI ============================
+  const userPositionsToList = () => {
+    if (!user) return null
 
-  return (
-    <section className="relative w-full sm:max-w-6xl h-5/6 mx-auto px-2 flex justify-evenly">
-      { error ? 
-        <div className="absolute top-12 w-full z-50">
-          <ErrorAlert title="Error" message={error} onClose={() => setError(undefined)}/> 
+    const items = userPositions[user.username] ? [{
+      username: user.username,
+      markerColor: userPositions[user.username].positionMarker.color,
+      lastPosition: userPositions[user.username].positionEvents.slice(-1)[0]
+    }] : []
+
+    for (const username in userPositions) {
+      if (username === user.username) continue
+
+      const lastPosition = userPositions[username].positionEvents.slice(-1)[0]
+
+      items.push({
+        username,
+        markerColor: userPositions[username].positionMarker.color,
+        lastPosition: userPositions[username].positionEvents.slice(-1)[0]
+      })
+    }
+
+    const loggedInUserPosition = userPositions[user.username]?.positionEvents.slice(-1)[0]
+
+    if (items.length === 0) {
+      return (
+        <div className="w-full relative top-24 flex flex-col justify-center">
+          <p className="text-center">There are no users yet. Find your position or connect to the group first!</p>
         </div>
-        : 
-        null
-      }
-      <div className="flex flex-col gap-y-3 items-center w-full h-full">
+      )
+    }
+
+    return (
+        <ul className="h-full">
+          { items.map(entry => 
+            <li 
+              key={entry.username} 
+              className="w-full ring-1 rounded-md ring-slate-300 p-3 hover:cursor-pointer hover:shadow-md my-3 first:mt-0"
+              onClick={() => {
+                setCenteredPosition([
+                  entry.lastPosition.coords.latitude,
+                  entry.lastPosition.coords.longitude
+                ])
+                setShowStatsUsername(entry.username)
+                setShowStatsPane(true)
+              }}
+            >
+              <div className="flex flex-row gap-x-2 items-center">
+                <div className="w-3 h-3 rounded-full" style={{
+                  backgroundColor: entry.markerColor
+                }}></div>
+                <p className="text-md font-medium">{entry.username}</p>
+              </div>
+              <div>    
+                { entry.username !== user.username && loggedInUserPosition ?
+                  <p>Distance: { (distanceInKm(
+                    entry.lastPosition.coords.latitude,
+                    entry.lastPosition.coords.longitude,
+                    loggedInUserPosition.coords.latitude,
+                    loggedInUserPosition.coords.longitude
+                  )).toFixed(4)} km</p>
+                  :
+                  null
+                }
+              </div>
+            </li>
+          )}
+        </ul>
+    )
+  }
+
+  const showStatsForUser = (username: string) => {
+    const userPosition = userPositions[username]
+    if (!userPosition) return
+    const lastPosition = userPosition.positionEvents.slice(-1)[0]
+    return (
+      <div className="w-full ring-1 rounded-md ring-slate-300 p-6 flex flex-row justify-between items-center flex-wrap">
         <div>
-          <Heading classes="mb-4">
-            Tour sessions
-          </Heading>
+          <div className="flex flex-row gap-x-2 items-center">
+            <div className="w-3 h-3 rounded-full" style={{
+              backgroundColor: userPosition.positionMarker.color
+            }}></div>
+            <p className="text-md font-medium">{userPosition.username}</p>
+          </div>
+          <p className="mt-2">Last update: {new Date(lastPosition.timestamp).toLocaleString()}</p>
         </div>
-        <div className="w-5/6 h-2/3 mx-auto mb-6">
-          <Map setMapInParent={setMap}></Map>
+        <div className="flex flex-col items-center">
+          <h6 className="text-lg font-medium">Speed</h6>
+          <h2 className="text-4xl font-semibold">{lastPosition.coords.speed ?? "N/A"}</h2>
         </div>
-        <div className="flex flex-row gap-3 flex-wrap justify-center">
-          { ws ?
-            <Button onClick={stopWs} classes="bg-red-800 hover:bg-red-700">Stop Receiving Group Data</Button>
-            :
-            <Button onClick={startWs}>Start Receiving Group Data</Button>
-          }
-          { positionTracker ?
-            <Fragment>
-              <Button onClick={stopTracking} classes="bg-red-800 hover:bg-red-700">Stop tracking my position</Button>
-              { userToWatch === user!.username ?
-                <Button onClick={() => setUserToWatch(undefined)} classes="bg-red-800 hover:bg-red-700">Stop following my position</Button>
-                :
-                <Button onClick={() => setUserToWatch(user!.username)}>Follow my position</Button>
-              }
-            </Fragment>
-            :
-            <Button onClick={startTracking}>Track my position</Button>
-          }
-          { ws && positionTracker ?
-            ( broadcastMyPosition ?
-              <Button onClick={() => setBroadcastMyPosition(false)} classes="bg-red-800 hover:bg-red-700">Stop broadcasting my position</Button>
-              :
-              <Button onClick={() => setBroadcastMyPosition(true)}>Start broadcasting my position</Button>
-            )
-            :
-            null
-          }
-          <Button onClick={findCurrentPosition}>Find my position</Button>
-          <Button onClick={toggleMarkers}>Toggle Markers</Button>
-          {/* <div className="max-h-12">
-            <InputLabel htmlFor="locationEventLimit">Location length limit</InputLabel>
-            <Input type="number" onChange={(e) => setLocationEventLengthLimit(Number(e.target.value))}/>
-          </div> */}
+        <div className="flex flex-col items-center">
+          <h6 className="text-lg font-medium">Altitude</h6>
+          <h2 className="text-4xl font-semibold">{lastPosition.coords.altitude ?? "N/A"}</h2>
+        </div>
+        <div className="flex flex-col items-center gap-y-3 justify-evenly">    
+         <button 
+          className="bg-theme-bg-1 ring-1 ring-slate-300 rounded-md px-3 py-2 font-medium"
+          onClick={() => centerMapToPosition([
+            lastPosition.coords.latitude,
+            lastPosition.coords.longitude
+          ])}
+         >Show on map</button>
         </div>
       </div>
-      {/* <div className="border border-solid border-yellow-700 w-1/3">
-        <ul className="border border-solid border-red-900 w-full h-full overflow-y-auto">
-        </ul>
-      </div> */}
+    )
+  }
+
+  return (
+    <section className="relative w-screen sm:max-w-6xl mb-12 mx-auto flex flex-col items-center gap-y-3">
+      { error ? 
+          <div className="absolute top-12 w-full">
+            <ErrorAlert title="Error" message={error} onClose={() => setError(undefined)}/> 
+          </div>
+          : 
+          null
+        }
+      <div>
+        <Heading>
+          Tour sessions
+        </Heading>
+      </div>
+      <div className="w-full h-full flex justify-evenly ">
+        <div className="flex flex-col gap-y-3 items-center w-full h-full px-3">
+          
+          <div className="w-full h-[500px] mx-auto mb-3 z-0">
+            <Map setMapInParent={setMap}></Map>
+          </div>
+          <div className="flex flex-row gap-3 flex-wrap justify-center">
+            { ws ?
+              <Button btnType="danger" onClick={stopWs}>Disconnect</Button>
+              :
+              <Button btnType="basic" onClick={startWs}>Connect to group</Button>
+            }
+            { positionTracker ?
+              <Fragment>
+                <Button btnType="danger" onClick={stopTracking}>Stop tracking my position</Button>
+                { userToWatch === user!.username ?
+                  <Button btnType="danger" onClick={() => setUserToWatch(undefined)}>Stop following my position</Button>
+                  :
+                  <Button btnType="basic" onClick={() => setUserToWatch(user!.username)}>Follow my position</Button>
+                }
+              </Fragment>
+              :
+              <Button btnType="basic" onClick={startTracking}>Track my position</Button>
+            }
+            { ws && positionTracker ?
+              ( broadcastMyPosition ?
+                <Button btnType="danger" onClick={() => setBroadcastMyPosition(false)}>Stop broadcasting my position</Button>
+                :
+                <Button btnType="basic" onClick={() => setBroadcastMyPosition(true)}>Start broadcasting my position</Button>
+              )
+              :
+              null
+            }
+            <Button btnType="basic" onClick={findCurrentPosition}>Find my position</Button>
+            <Button btnType="basic" onClick={toggleMarkers}>Toggle Markers</Button>
+            <Button btnType="basic" onClick={() => { setShowUsersPane(!showUsersPane) }}>Toggle Users</Button>
+            <Button btnType="basic" onClick={() => {
+              // show the user's stats if there is no other user selected and the pane is closed
+              if (!showStatsPane) {
+                if (!showStatsUsername && user) {
+                  setShowStatsUsername(user.username)
+                }
+                setShowStatsPane(true)
+              } else {
+                setShowStatsPane(false)
+              }
+            }}>Toggle stats</Button>
+          </div>
+        </div>
+        { showUsersPane ?
+          <div className="w-1/4 overflow-y-auto p-2 h-[550px]">
+            { userPositionsToList() }
+          </div>
+          :
+          null
+        }
+      </div>
+      
+      <div className="w-full mb-6">
+        { showStatsPane && showStatsUsername ?
+          showStatsForUser(showStatsUsername)
+          :
+          (!showStatsUsername && showStatsPane ?
+            <p>Select a user first or find your position.</p>
+            :
+            null
+          )
+        }
+      </div>
     </section>
   )
 }

@@ -36,7 +36,6 @@ const Map = memo(function(props: {
   setMapInParent: (map: L.Map) => void
 }) {
 
-  // ========================== Map Initialization ==========================
   useEffect(() => {
     console.log("useEffect init map");
     props.setMapInParent(initMap('map'))

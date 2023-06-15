@@ -10,8 +10,10 @@ export default function ProtectedRoutes() {
   if (!user) {
     return (
       <div className="flex flex-col items-center gap-y-4 mt-36">
-        <Heading classes="text-">It seems that you are not logged in.</Heading>
-        <Link to={LINKS[LinkType.LOGIN].build()}><Button>Sign In</Button></Link>
+        <Heading className="text-">It seems that you are not logged in.</Heading>
+        <Link to={LINKS[LinkType.LOGIN].build()}>
+          <Button btnType="basic">Sign In</Button>
+        </Link>
       </div>
     )
   } 

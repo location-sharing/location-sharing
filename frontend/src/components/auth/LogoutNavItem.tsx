@@ -11,12 +11,11 @@ export default function LogoutNavItem() {
 
   const logout = () => {
     removeUser()
-    // navigate(LINKS.HOME)
     navigate(LINKS[LinkType.HOME].build())
   }
 
   return (
-    <NavItem link="#">
+    <NavItem to="#">
       <button onClick={logout}>Sign Out</button>
     </NavItem>
   )

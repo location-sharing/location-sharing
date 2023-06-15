@@ -89,7 +89,7 @@ export default function LoginForm() {
                       onChange={ e => setPassword(e.target.value) }
                     />
                 </div>
-                <Button type="submit">Sign in</Button>
+                <Button btnType="basic" type="submit" className="w-full">Sign in</Button>
                 <p className="text-sm text-gray-500 text-center">
                     Don’t have an account yet?
                     <Link to={LINKS[LinkType.REGISTER].build()} className="font-medium text-primary-600 hover:underline"> Sign up</Link>

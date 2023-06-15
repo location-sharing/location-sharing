@@ -30,8 +30,6 @@ export default function GroupCreatePage() {
 
     const res = await createGroup(group, user!.token)
     if (res.ok) {
-      // TODO: redirect to group detail page
-
       const createdGroup: GroupDetail = await res.json()
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: createdGroup.id}), { state: createdGroup })
 
@@ -53,7 +51,7 @@ export default function GroupCreatePage() {
         : 
         null
       }
-      <Heading classes="mb-4">Create a new group</Heading>
+      <Heading className="mb-4">Create a new group</Heading>
       <div className="w-full h-1/2 border border-solid ring-1 ring-slate-50 rounded-md">
         <form onSubmit={async e => handleSubmit(e)} className="w-1/2 h-full mx-auto flex flex-col gap-y-4 justify-center">
           <div>

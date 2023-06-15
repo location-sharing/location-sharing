@@ -45,7 +45,6 @@ export default function RegisterForm() {
 
       if (response.ok) {    
         removeUser()
-        // navigate(LINKS.LOGIN)
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         setError(errorMessage)      
@@ -91,10 +90,9 @@ export default function RegisterForm() {
                       onChange={ e => setPassword(e.target.value) }
                     />
                 </div>
-                <Button type="submit">Register</Button>
+                <Button btnType="basic" type="submit" className="w-full">Register</Button>
                 <p className="text-sm text-gray-500 text-center">
                   Already have an account? 
-                  {/* <Link to={LINKS.LOGIN} className="font-medium text-primary-600 hover:underline"> Sign in</Link> */}
                   <Link to={LINKS[LinkType.LOGIN].build()} className="font-medium text-primary-600 hover:underline"> Sign in</Link>
                 </p>
             </form>
