@@ -36,10 +36,12 @@ const Map = memo(function(props: {
   setMapInParent: (map: L.Map) => void
 }) {
 
+  const { setMapInParent } = props
+
   useEffect(() => {
     console.log("useEffect init map");
-    props.setMapInParent(initMap('map'))
-  }, [])
+    setMapInParent(initMap('map'))
+  }, [setMapInParent])
 
   return (
     <div id='map' className="w-full h-full"></div>

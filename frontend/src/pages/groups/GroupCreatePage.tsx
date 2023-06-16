@@ -33,7 +33,7 @@ export default function GroupCreatePage() {
       const createdGroup: GroupDetail = await res.json()
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: createdGroup.id}), { state: createdGroup })
 
-    } else if (res.status == httpStatus.UNAUTHORIZED) {
+    } else if (res.status === httpStatus.UNAUTHORIZED) {
       removeUser()
       navigate(LINKS[LinkType.LOGIN].build())
     } else {

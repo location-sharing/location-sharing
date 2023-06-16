@@ -1,5 +1,5 @@
 import httpStatus from "http-status"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import Button from "../../components/base/Button"
 import Heading from "../../components/base/Heading"
@@ -16,6 +16,7 @@ import { getErrorFromResponse } from "../../util/util"
 
 export default function GroupsPage() {
 
+  const { user, removeUser } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState<string>()
 
@@ -28,9 +29,26 @@ export default function GroupsPage() {
   }
   const [groupsWithActiveUsers, setGroups] = useState<Array<GroupWithActiveUsers>>()
 
-  const { user, removeUser } = useAuth()
+  const loadGroups = useCallback(async () => {
 
-  const loadGroups = async () => {
+    const loadActiveGroupUsers = async (groupId: string): Promise<Array<ActiveUser>> => {
+      try {
+        const response = await fetchActiveGroupUsers(groupId, user!.token)
+        if (response.status === httpStatus.OK) {  
+          return await response.json()
+        } else if (response.status === httpStatus.UNAUTHORIZED) {
+          removeUser()
+          navigate(LINKS[LinkType.LOGIN].build())
+        } else {
+          const errorResponse = await getErrorFromResponse(response)
+          setError(errorResponse ? errorResponse.detail : "An error occurred")
+        }
+      } catch (err) {
+        setError("An error occurred.")
+      }
+      return []
+    }
+
     try {
       const response = await fetchGroups(user!.token)
 
@@ -60,28 +78,10 @@ export default function GroupsPage() {
     } catch (error: any) {      
       setError("An error occurred.")  
     }
-  }
-
-  const loadActiveGroupUsers = async (groupId: string): Promise<Array<ActiveUser>> => {
-    try {
-      const response = await fetchActiveGroupUsers(groupId, user!.token)
-      if (response.status === httpStatus.OK) {  
-        return await response.json()
-      } else if (response.status === httpStatus.UNAUTHORIZED) {
-        removeUser()
-        navigate(LINKS[LinkType.LOGIN].build())
-      } else {
-        const errorResponse = await getErrorFromResponse(response)
-        setError(errorResponse ? errorResponse.detail : "An error occurred")
-      }
-    } catch (err) {
-      setError("An error occurred.")
-    }
-    return []
-  }
+  }, [navigate, removeUser, user])
   
 
-  useEffect(() => { loadGroups() }, [])
+  useEffect(() => { loadGroups() }, [loadGroups])
 
   const renderGroups = () => {
     if (groupsWithActiveUsers?.length === 0) {

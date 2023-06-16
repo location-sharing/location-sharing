@@ -51,7 +51,7 @@ function useUserAuth() {
 
     const userAuth: AuthenticatedUser = JSON.parse(userString)
     setUser(userAuth)
-  }, [])
+  }, [setUser])
 
   const setUserFromResponse = async (response: Response) => {
     const user = await getAuthFromResponse(response)

@@ -1,6 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../../components/base/Button";
 import Heading from "../../components/base/Heading";
@@ -77,14 +77,12 @@ export default function SessionPage(){
   const [showStatsPane, setShowStatsPane] = useState<boolean>(false)
   const [showUsersPane, setShowUsersPane] = useState<boolean>(false)
 
-  const [locationEventLengthLimit, setLocationEventLengthLimit] = useState<number>(20)
-
   const [map, setMap] = useState<L.Map>()
+
+  const locationEventLengthLimit = 20
 
   useEffect(() => checkGeolocationSupport(), [])
 
-  // runs the returned cleanup function on component unmount
-  useEffect(() => cleanupResources, [])
 
   // sets centered position to the watched user
   useEffect(() => {
@@ -96,7 +94,7 @@ export default function SessionPage(){
         lastPosition.coords.longitude
       ])
     }
-  }, [userToWatch])
+  }, [userToWatch, userPositions])
 
   // ==================  INIT  ==================
   const checkGeolocationSupport = () => {
@@ -150,12 +148,12 @@ export default function SessionPage(){
     }
   }
 
-  const stopWs = () => {
+  const stopWs = useCallback(() => {
     if (ws) {
       ws.close()
       setWs(undefined)
     }
-  }
+  }, [ws])
 
   const findCurrentPosition = () => {
     console.log("finding current position");
@@ -211,7 +209,7 @@ export default function SessionPage(){
     }
   }
 
-  const stopTracking = () => {
+  const stopTracking = useCallback(() => {
     if (positionTracker) {
       navigator.geolocation.clearWatch(positionTracker)
       setPositionTracker(undefined)
@@ -220,13 +218,16 @@ export default function SessionPage(){
         setUserToWatch(undefined)
       }
     }
-  }
+  }, [positionTracker, user, userToWatch])
 
   // ==================  CLEANUP  ==================
-  const cleanupResources = () => {
+  const cleanupResources = useCallback(() => {
     stopWs()
     stopTracking()
-  }
+  }, [stopWs, stopTracking])
+
+  // runs the returned cleanup function on component unmount
+  useEffect(() => cleanupResources, [cleanupResources])
 
   // ==================  USER POSITIONS  ==================
   const updateUserPositions = (username: string, position: GeolocationPositionData) => {
@@ -271,37 +272,38 @@ export default function SessionPage(){
   }
 
   // ========================== Map Updates ==========================
-  useEffect(() => { updateUserMarker(changedUserPosition) }, [changedUserPosition])
-  useEffect(() => { centerMapToPosition(centeredPosition) }, [centeredPosition])
+  useEffect(() => {
+    const updateUserMarker = (userPosition?: UserPosition) => {
+      // update and add user markers based on the user positions
+      if (!userPosition) return 
+          
+      const events = userPosition.positionEvents
+      if (!events || events.length === 0) return
+  
+      const { latitude, longitude } = events[events.length-1].coords
+      
+      const userPostition = userPositions[userPosition.username]
+      if (userPostition) {
+        // update marker position
+        console.log(`setting marker position for user ${userPosition.username}`);
+        userPostition.positionMarker.marker.setLatLng([latitude, longitude])
+      }
+      console.log(`updated marker for user ${userPosition.username}`);
+    } 
+    updateUserMarker(changedUserPosition) 
+  }, [changedUserPosition, userPositions])
 
-  const updateUserMarker = (userPosition?: UserPosition) => {
-    // update and add user markers based on the user positions
-    if (!userPosition) return 
-        
-    const events = userPosition.positionEvents
-    if (!events || events.length === 0) return
-
-    const { latitude, longitude } = events[events.length-1].coords
-    
-    const userPostition = userPositions[userPosition.username]
-    if (userPostition) {
-      // update marker position
-      console.log(`setting marker position for user ${userPosition.username}`);
-      userPostition.positionMarker.marker.setLatLng([latitude, longitude])
-    }
-    console.log(`updated marker for user ${userPosition.username}`);
-  }
-
-  const centerMapToPosition = (position?: L.LatLngExpression) => {
+  const centerMapToPosition = useCallback((position?: L.LatLngExpression) => {
     if (!position) return 
-    
     if (map) {
       map.setView(position)
     } else {
       console.log("center: no map available");
     }
     console.log(`centered map to position ${position}`);
-  }
+  }, [map])
+
+  useEffect(() => { centerMapToPosition(centeredPosition) }, [centeredPosition, centerMapToPosition])
 
   const toggleMarkers = () => {
     for (const username in userPositions) {
@@ -339,9 +341,6 @@ export default function SessionPage(){
 
     for (const username in userPositions) {
       if (username === user.username) continue
-
-      const lastPosition = userPositions[username].positionEvents.slice(-1)[0]
-
       items.push({
         username,
         markerColor: userPositions[username].positionMarker.color,

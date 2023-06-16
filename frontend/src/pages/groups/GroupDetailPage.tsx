@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Button from "../../components/base/Button";
 import Heading from "../../components/base/Heading";
@@ -7,7 +7,7 @@ import Tag from "../../components/base/Tag";
 import ErrorAlert from "../../components/base/alerts/ErrorAlert";
 import GroupDetail from "../../models/group/GroupDetail";
 import { LINKS, LinkType } from "../../router/router";
-import useAuth from "../../services/auth";
+import useAuth, { AuthenticatedUser } from "../../services/auth";
 import { getErrorFromResponse } from "../../util/util";
 import { fetchGroup, removeGroupMember } from "../../services/groups";
 
@@ -23,14 +23,13 @@ export default function GroupDetailPage() {
   const [error, setError] = useState<string>()
   const [group, setGroup] = useState<GroupDetail>()
 
-  const loadGroup = async () => {
-
+  const loadGroup = useCallback(async (groupId: string, user: AuthenticatedUser) => {
     // if there is no group in the state fetch the data
     const groupFromLocation = location.state
 
     try {
       if (!groupFromLocation) {
-        const res = await fetchGroup(groupId!, user!.token)
+        const res = await fetchGroup(groupId, user.token)
   
         if (res.status === httpStatus.OK) {  
           setGroup(await res.json())
@@ -47,7 +46,9 @@ export default function GroupDetailPage() {
     } catch (err) {
       setError("An error occurred")
     }
-  }
+  }, [location.state, navigate, removeUser])
+
+  useEffect(() => { if (groupId && user) loadGroup(groupId, user) }, [loadGroup, groupId, user])
 
   const leaveGroup = async () => {
     const res = await removeGroupMember(groupId!, user!.userId, user!.token)
@@ -61,8 +62,6 @@ export default function GroupDetailPage() {
       setError(errorResponse ? errorResponse.detail : "An error occurred")
     }
   }
-
-  useEffect(() => { loadGroup() }, [])
 
   const isOwner = (userId: string) => userId === group?.ownerId
 
@@ -92,7 +91,6 @@ export default function GroupDetailPage() {
               LINKS[LinkType.GROUP_SESSIONS].build({groupId: group!.id})
           )}>Start session</Button>
           { isOwner(user!.userId) ?
-            // <div className="flex flex-row flex-wrap justify-end gap-x-3">
             <div className="flex flex-row gap-x-3 mt-6 justify-end items-center w-2/3">
               <Button btnType="basic" className="sm:w-44" onClick={() => navigate(
                 LINKS[LinkType.GROUP_USERS].build({groupId: group!.id}), 

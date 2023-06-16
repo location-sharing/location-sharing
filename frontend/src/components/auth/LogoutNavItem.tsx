@@ -1,7 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { LINKS, LinkType } from "../../router/router";
 import useAuth from "../../services/auth";
-import Button from "../base/Button";
-import { useNavigate } from "react-router-dom"
 import NavItem from "../base/NavItem";
 
 export default function LogoutNavItem() {

@@ -2,13 +2,13 @@ ktor:
   development: true
   deployment:
     host: "0.0.0.0"
-    port: 8080
+    port: "$PORT:8080"
   application:
     modules:
       - edu.ApplicationKt.module
 
 kafka:
-  bootstrap.servers: "localhost:9092"
+  bootstrap.servers: "$KAFKA_BOOTSTRAP_SERVERS:localhost:9092"
   max.poll.interval.ms: 5000
 
   # leader confirms is enough
@@ -27,15 +27,16 @@ kafka_topics:
   validation_group_user_result: "validation.group.user.result"
 
 jwt:
-  secret: "random-key-from-env-var"
+  secret: "$JWT_SECRET:random-key-from-env-var"
   issuer: "location-sharing-app"
   audience: "location-sharing-app"
 
 cors:
-    originPatterns:
-      - "http://localhost:[0-9]*"
+    originPattern: "$CORS_ORIGIN_PATTERN:http://localhost:[0-9]*"
     allowedMethods:
-      - "GET|POST|OPTIONS"
+      - "GET"
+      - "POST"
+      - "OPTIONS"
     allowedHeaders:
       - ".*"
     maxAge: 0

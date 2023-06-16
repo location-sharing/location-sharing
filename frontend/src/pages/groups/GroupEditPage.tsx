@@ -25,7 +25,7 @@ export default function GroupEditPage() {
 
   useEffect(() => {
     setGroupName(groupFromLocation.name)
-  }, [])
+  }, [groupFromLocation.name])
 
   const handleSubmit: React.FormEventHandler = async (event) => {
     event.preventDefault()
@@ -35,10 +35,10 @@ export default function GroupEditPage() {
     }
 
     const res = await updateGroup(groupId!, group, user!.token)
-    if (res.status == httpStatus.OK) {
+    if (res.ok) {
       const editedGroup: GroupDetail = await res.json()
       navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: editedGroup.id}), {state: editedGroup})
-    } else if (res.status == httpStatus.UNAUTHORIZED) {
+    } else if (res.status === httpStatus.UNAUTHORIZED) {
       removeUser()
       navigate(LINKS[LinkType.LOGIN].build())
     } else {

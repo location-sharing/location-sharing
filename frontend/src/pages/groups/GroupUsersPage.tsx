@@ -43,7 +43,7 @@ export default function GroupUsersPage() {
         // TODO: wait for a confirm notification or update the UI optimistically (add the user to the list)
         setNotification(`If user '${memberName}' exists, it should be added within a couple seconds.`)
   
-      } else if (res.status == httpStatus.UNAUTHORIZED) {
+      } else if (res.status === httpStatus.UNAUTHORIZED) {
         removeUser()
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
@@ -60,7 +60,7 @@ export default function GroupUsersPage() {
       const res = await fetchGroup(group!.id, user!.token)
       if (res.ok) {
         setGroup(await res.json())  
-      } else if (res.status == httpStatus.UNAUTHORIZED) {
+      } else if (res.status === httpStatus.UNAUTHORIZED) {
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(res)
@@ -76,7 +76,7 @@ export default function GroupUsersPage() {
       const res = await removeGroupMember(group!.id, userId, user!.token)
       if (res.ok) {
         reloadGroup()
-      } else if (res.status == httpStatus.UNAUTHORIZED) {
+      } else if (res.status === httpStatus.UNAUTHORIZED) {
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(res)
@@ -92,7 +92,7 @@ export default function GroupUsersPage() {
       const res = await changeGroupOwner(group!.id, username, user!.token)
       if (res.ok) {
         navigate(LINKS[LinkType.GROUP_DETAIL].build({ groupId: group!.id }))
-      } else if (res.status == httpStatus.UNAUTHORIZED) {
+      } else if (res.status === httpStatus.UNAUTHORIZED) {
         navigate(LINKS[LinkType.LOGIN].build())
       } else {
         const errorResponse = await getErrorFromResponse(res)

@@ -1,11 +1,8 @@
 package edu.config
 
 import io.ktor.http.*
-import io.ktor.server.application.*
 import io.ktor.server.config.*
 import io.ktor.server.plugins.cors.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.cors.routing.CORS
 import java.util.regex.Pattern
 
 object CorsConfig {
@@ -14,8 +11,8 @@ object CorsConfig {
 
     private val corsOptions = config.config("cors").toMap()
 
-    private val originPatternsConfig = corsOptions["originPatterns"] as List<Any?>?
-    private val allowedMethodsConfig = corsOptions["allowedMethods"] as List<Any?>?
+    private val originPatternConfig = corsOptions["originPattern"] as String
+    private val allowedMethodsConfig = corsOptions["allowedMethodPattern"] as List<Any?>?
     private val allowedHeadersConfig = corsOptions["allowedHeaders"] as List<Any?>?
     private val exposedHeadersConfig = corsOptions["exposedHeaders"] as List<Any?>?
 
@@ -23,18 +20,8 @@ object CorsConfig {
     private val maxAgeConfig = (corsOptions["maxAge"] as String? ?: "1800").toLong()
 
     fun installCors(config: CORSConfig) {
-        val originMatchers = originPatternsConfig?.map {
-            Pattern.compile(it as String, Pattern.CASE_INSENSITIVE).asMatchPredicate()
-        }
-
-        config.allowOrigins { origin ->
-            try {
-                originMatchers?.first { matcher -> matcher.test(origin) }
-                true
-            } catch (e: NoSuchElementException) {
-                false
-            }
-        }
+        val originMatcher = Pattern.compile(originPatternConfig, Pattern.CASE_INSENSITIVE).asMatchPredicate()
+        config.allowOrigins { originMatcher.test(it) }
 
         allowedMethodsConfig?.forEach { config.allowMethod(HttpMethod(it as String)) }
 
