@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: group-service
+  labels:
+    app: group-service
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: group-service
+  template:
+    metadata:
+      labels:
+        app: group-service
+    spec:
+      containers:
+      - name: group-service
+        image: adams1mon/location-sharing-app_group-service
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8083
+        envFrom:
+        - configMapRef: 
+            name: group-service
+        imagePullSecrets:
+        - name: dockerhub-secret

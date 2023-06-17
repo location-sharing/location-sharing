@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connection-gateway
+  labels:
+    app: connection-gateway
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connection-gateway
+  template:
+    metadata:
+      labels:
+        app: connection-gateway
+    spec:
+      containers:
+      - name: connection-gateway
+        image: adams1mon/location-sharing-app_connection-gateway
+        imagePullPolicy: Always
+
+
+        ports:
+        - containerPort: 8080
+        imagePullSecrets:
+        - name: dockerhub-secret
+

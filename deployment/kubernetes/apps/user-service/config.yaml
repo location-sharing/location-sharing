@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service
+  namespace: apps
+data:
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service_test
+
