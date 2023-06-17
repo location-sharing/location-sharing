@@ -1,0 +1,115 @@
+version: '3.8'
+name: "location-sharing-app"
+services:
+
+  kafka_zookeeper:
+    image: confluentinc/cp-zookeeper:7.3.2
+    container_name: kafka_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka_broker:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka_broker
+    ports:
+    # To learn about configuring Kafka for access across networks see
+    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
+      - "9092:9092"
+    depends_on:
+      - kafka_zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'kafka_zookeeper:2181'
+
+      KAFKA_LISTENERS: LISTENER_INTERNAL://kafka_broker:29092,LISTENER_EXTERNAL://0.0.0.0:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INTERNAL:PLAINTEXT,LISTENER_EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INTERNAL://kafka_broker:29092,LISTENER_EXTERNAL://kafka_broker:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INTERNAL
+
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: true
+
+      # by default there are 3 replicas configured, but the default doesn't work in a single-broker cluster
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8081:8080
+    depends_on:
+      - kafka_broker
+    environment:
+      KAFKA_CLUSTERS_0_NAME: kafka-test
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka_broker:29092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    
+  postgres:
+    container_name: postgres
+    image: postgres:15.3
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_MULTIPLE_DATABASES: group_service_test,user_service_test
+      PGDATA: /data/postgres
+    volumes:
+      - ./create-multiple-postgres-databases.sh:/docker-entrypoint-initdb.d/create-databases.sh
+    # volumes:
+    #    - postgres:/data/postgres
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.1
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    # volumes:
+    #    - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+
+  
+  connection-gateway:
+    container_name: connection-gateway
+    image: connection-gateway
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka_broker
+
+  user-service:
+    container_name: user-service
+    image: user-service
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service_test
+    ports:
+      - "8082:8082"
+    depends_on:
+      - kafka_broker
+      - postgres
+  
+  group-service:
+    container_name: group-service
+    image: group-service
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/group_service_test
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka_broker
+      - postgres
+
+# volumes:
+#     postgres:
+#     pgadmin:
