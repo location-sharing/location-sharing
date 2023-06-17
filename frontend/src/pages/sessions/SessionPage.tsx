@@ -222,12 +222,14 @@ export default function SessionPage(){
 
   // ==================  CLEANUP  ==================
   const cleanupResources = useCallback(() => {
+    console.log("cleaning up");
+    
     stopWs()
     stopTracking()
   }, [stopWs, stopTracking])
 
   // runs the returned cleanup function on component unmount
-  useEffect(() => cleanupResources, [cleanupResources])
+  useEffect(() => cleanupResources, [])
 
   // ==================  USER POSITIONS  ==================
   const updateUserPositions = (username: string, position: GeolocationPositionData) => {

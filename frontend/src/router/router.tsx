@@ -21,6 +21,7 @@ export enum LinkType {
   GROUP_EDIT,
   GROUP_USERS,
   GROUP_SESSIONS,
+  WILDCARD,
 }
 
 const params = {
@@ -63,6 +64,10 @@ export const LINKS: {[key in LinkType]: {template: string, build: (params?: any)
   [LinkType.GROUP_SESSIONS]: {
     template: `/groups/${params.GROUP_ID}/sessions`,
     build: (pathParams: {groupId: string}) => LINKS[LinkType.GROUP_SESSIONS].template.replace(params.GROUP_ID, pathParams.groupId)
+  },
+  [LinkType.WILDCARD]: {
+    template: "/*",
+    build: () => LINKS[LinkType.WILDCARD].template
   }
 }
 
@@ -114,7 +119,11 @@ const router = createBrowserRouter([
       {
         path: LINKS[LinkType.GROUP_SESSIONS].template,
         element: <SessionPage/>
-      }
+      },
+      {
+        path: LINKS[LinkType.WILDCARD].template,
+        element: <HomePage/>
+      },
     ]
   },
 ]);

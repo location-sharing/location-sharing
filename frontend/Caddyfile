@@ -1,0 +1,22 @@
+{
+	acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+location-sharing-app.duckdns.org:443 {
+	tls {
+		dns duckdns {$DUCKDNS_API_TOKEN}
+		resolvers 8.8.8.8
+	}
+
+	root * /srv
+	encode gzip
+	try_files {path} /index.html
+	file_server
+}
+
+localhost:443, localhost:80 {
+	root * /srv
+	encode gzip
+	try_files {path} /index.html
+	file_server
+}

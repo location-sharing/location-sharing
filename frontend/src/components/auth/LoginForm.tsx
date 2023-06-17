@@ -8,20 +8,7 @@ import ErrorAlert from "../base/alerts/ErrorAlert";
 import httpStatus from "http-status";
 import LoginCredentials from "../../models/auth/LoginCredentials";
 import { getErrorFromResponse } from "../../util/util";
-import useAuth from "../../services/auth";
-
-const loginUrl = 'http://localhost:8082/api/user/authenticate'
-
-const login = async (loginData: LoginCredentials) => fetch(
-  loginUrl,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(loginData)
-  }
-)
+import useAuth, { login } from "../../services/auth";
 
 export default function LoginForm() {
 

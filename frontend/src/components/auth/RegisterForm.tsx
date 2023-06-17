@@ -6,21 +6,8 @@ import Button from "../base/Button";
 import Input from "../base/Input";
 import InputLabel from "../base/InputLabel";
 import ErrorAlert from "../base/alerts/ErrorAlert";
-import useAuth from "../../services/auth";
+import useAuth, { register } from "../../services/auth";
 
-
-const registerUrl = 'http://localhost:8082/api/user'
-
-const register = async (data: UserCreate) => fetch(
-  registerUrl,
-  {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data)
-  }
-)
 
 export default function RegisterForm() {
 

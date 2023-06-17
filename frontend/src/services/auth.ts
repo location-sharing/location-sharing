@@ -2,6 +2,8 @@ import jwtDecode, { JwtPayload } from "jwt-decode";
 import { useContext, useEffect } from "react";
 import AuthContext from "../context/AuthContext";
 import AuthTokenResponse from "../models/auth/AuthToken";
+import LoginCredentials from "../models/auth/LoginCredentials";
+import UserCreate from "../models/user/UserCreate";
 
 
 const AUTH_USER_KEY = "authUser";
@@ -74,3 +76,28 @@ export default function useAuth() {
 
   return { user, storeUser, removeUser };
 }
+
+
+const loginUrl = `${process.env.REACT_APP_API_USER_SERVICE}/api/user/authenticate`
+export const login = async (loginData: LoginCredentials) => fetch(
+  loginUrl,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(loginData)
+  }
+)
+
+const registerUrl = `${process.env.REACT_APP_API_USER_SERVICE}/api/user`
+export const register = async (data: UserCreate) => fetch(
+  registerUrl,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  }
+)

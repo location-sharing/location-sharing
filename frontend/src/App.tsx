@@ -1,12 +1,8 @@
 import { useState } from "react";
-import { Outlet, Link } from "react-router-dom";
-import Heading from './components/base/Heading';
-import NavItem from "./components/base/NavItem";
+import { Outlet } from "react-router-dom";
 import AuthContext from "./context/AuthContext";
-import { LINKS } from './router/router';
-import { AuthenticatedUser } from "./services/auth";
-import Header from "./pages/header/PageHeader";
 import PageHeader from "./pages/header/PageHeader";
+import { AuthenticatedUser } from "./services/auth";
 
 function App() {
 

@@ -2,7 +2,7 @@ import GroupCreate from "../models/group/GroupCreate"
 import GroupUpdate from "../models/group/GroupUpdate"
 import { objectToQueryString } from "../util/util"
 
-const groupsUrl = "http://localhost:8083/api/groups"
+const groupsUrl = `${process.env.REACT_APP_API_GROUP_SERVICE}/api/groups`
 
 export const createGroup = (group: GroupCreate, token: string) => fetch(
   groupsUrl,

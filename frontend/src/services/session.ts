@@ -1,7 +1,7 @@
 import { objectToQueryString } from "../util/util"
 
-const sessionHttpUrl = "http://localhost:8080"
-const sessionWsUrl = "ws://localhost:8080"
+const sessionHttpUrl = process.env.REACT_APP_API_SESSION_SERVICE_HTTP
+const sessionWsUrl = process.env.REACT_APP_API_SESSION_SERVICE_WS
 
 export const fetchActiveGroupUsers = (groupId: string, token: string) => fetch( 
   `${sessionHttpUrl}/active?` + objectToQueryString({ 
