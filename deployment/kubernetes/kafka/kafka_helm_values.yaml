@@ -1,0 +1,32 @@
+
+replicaCount: 3
+
+service:
+  ports:
+    client: 9092
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 1Gi
+
+serviceAccount:
+  create: true
+rbac:
+  create: true
+
+# provisioning: 
+#   enabled: true
+#   topics:
+#     - ""
+
+kraft:
+  enabled: false
+
+zookeeper:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 200Mi

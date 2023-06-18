@@ -1,0 +1,23 @@
+postgresql:
+  username: postgres
+  password: changeme
+
+  initdbScripts:
+    setup_user_service.sql: |
+      CREATE USER user_service;
+      CREATE DATABASE user_service;
+      GRANT ALL PRIVILEGES ON DATABASE user_service TO user_service;
+    
+    setup_group_service.sql: |
+      CREATE USER group_service;
+      CREATE DATABASE group_service;
+      GRANT ALL PRIVILEGES ON DATABASE group_service TO group_service;
+
+persistence:
+  enabled: true
+  storageClass: local-path
+  size: 2Gi
+
+service:
+  ports:
+    postgresql: 5432

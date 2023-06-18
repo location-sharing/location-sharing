@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-service
+  labels:
+    app: frontend-service
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-service
+  template:
+    metadata:
+      labels:
+        app: frontend-service
+    spec:
+      containers:
+      - name: frontend-service
+        image: adams1mon/location-sharing-app_frontend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: frontend-http
+        - containerPort: 443
+          name: frontend-https
+        env:
+        - name: DUCKDNS_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: frontend-dns-token
+              key: token
+      imagePullSecrets:
+      - name: dockerhub-secret

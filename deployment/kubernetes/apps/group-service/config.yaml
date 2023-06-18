@@ -4,6 +4,6 @@ metadata:
   name: group-service
   namespace: apps
 data:
-  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
-  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/group_service_test
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-ha.kafka.svc.cluster.local:9092
+  SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ha-postgresql-ha-pgpool.postgres.svc.cluster.local:5432/group_service
 

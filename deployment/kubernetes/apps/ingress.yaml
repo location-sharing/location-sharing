@@ -9,26 +9,38 @@ metadata:
   name: app-ingress
   namespace: apps
 spec:
-  ingressClassName: nginx
+  - tls:
+    hosts:
+    - location-sharing-app.duckdns.org
+
   rules:
-  - host: pdae-test.germanywestcentral.cloudapp.azure.com
+  - host: location-sharing-app.duckdns.org
     http:
       paths:
-      - path: /restful-blog
+      - path: /*
         pathType: Prefix
         backend:
           service:
-            name: restful-blog-service
-            port: 
-              number: 80
+            name: frontend-service
+            port:
+              number: 443
+
+      # - path: /api/user
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: user-service
+      #       port: 
+      #         number: 80
+
+      # - path: /api/groups
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: group-service
+      #       port: 
+      #         number: 80
               
-      - path: /http-echo
-        pathType: Prefix
-        backend:
-          service:
-            name: http-echo
-            port: 
-              number: 80
 
       
 

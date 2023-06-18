@@ -23,6 +23,6 @@ spec:
         - containerPort: 8082
         envFrom:
         - configMapRef: 
-            name: group-service
-        imagePullSecrets:
-        - name: dockerhub-secret
+            name: user-service
+      imagePullSecrets:
+      - name: dockerhub-secret

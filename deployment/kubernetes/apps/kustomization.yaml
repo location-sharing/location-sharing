@@ -4,7 +4,8 @@ kind: Kustomization
 resources:
 - apps-namespace.yaml
 
-- http-echo/
-- restful-blog/
+- connection-gateway/
+- user-service/
+- group-service/
 
-- ingress.yaml
+# - ingress.yaml

@@ -19,10 +19,10 @@ spec:
       - name: connection-gateway
         image: adams1mon/location-sharing-app_connection-gateway
         imagePullPolicy: Always
-
-
         ports:
         - containerPort: 8080
-        imagePullSecrets:
-        - name: dockerhub-secret
-
+        envFrom:
+        - configMapRef: 
+            name: connection-gateway
+      imagePullSecrets:
+      - name: dockerhub-secret
