@@ -1,5 +1,5 @@
 import httpStatus from "http-status"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import Button from "../../components/base/Button"
 import Heading from "../../components/base/Heading"
@@ -29,7 +29,7 @@ export default function GroupsPage() {
   }
   const [groupsWithActiveUsers, setGroups] = useState<Array<GroupWithActiveUsers>>()
 
-  const loadGroups = useCallback(async () => {
+  const loadGroups = async () => {
 
     const loadActiveGroupUsers = async (groupId: string): Promise<Array<ActiveUser>> => {
       try {
@@ -78,10 +78,9 @@ export default function GroupsPage() {
     } catch (error: any) {      
       setError("An error occurred.")  
     }
-  }, [navigate, removeUser, user])
-  
+  }
 
-  useEffect(() => { loadGroups() }, [loadGroups])
+  useEffect(() => { loadGroups() }, [])
 
   const renderGroups = () => {
     if (groupsWithActiveUsers?.length === 0) {

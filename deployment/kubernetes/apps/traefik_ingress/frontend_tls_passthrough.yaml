@@ -7,9 +7,10 @@ spec:
   entryPoints:
     - websecure
   routes:
-  - match: HostSNI(`*`)
+  - match: HostSNI(`location-sharing-app.duckdns.org`) || HostSNI(`localhost`)
     services:
     - name: frontend-service
+      namespace: apps
       port: 443
   tls:
     passthrough: true 

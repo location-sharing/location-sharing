@@ -9,14 +9,21 @@ spring:
     hibernate:
       ddl-auto: create-drop
 
-
 logging:
   level:
     root: info
-    sql: debug
-    org:
-      springframework:
-        security: debug
+    sql: info
+
+#logging:
+#  level:
+#    root: debug
+#    sql: info
+#    org:
+#      springframework:
+#        security: debug
+#        kafka: info
+#      apache:
+#        kafka: info
 
 jwt:
   secret: "random-key-from-env-var"
@@ -34,6 +41,7 @@ cors:
       allowedHeaders: "*"
       exposedHeaders: "Authorization"
       allowCredentials: true
+      maxAge: 0
 
 server:
   port: 8082

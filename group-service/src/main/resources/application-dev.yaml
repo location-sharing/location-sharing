@@ -12,7 +12,19 @@ spring:
 logging:
   level:
     root: info
-    sql: debug
+    sql: info
+
+#
+#logging:
+#  level:
+#    root: debug
+#    sql: info
+#    org:
+#      springframework:
+#        security: debug
+#        kafka: info
+#      apache:
+#        kafka: info
 
 jwt:
   secret: "random-key-from-env-var"

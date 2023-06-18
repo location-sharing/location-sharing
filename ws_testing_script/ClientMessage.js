@@ -1,6 +1,5 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.modelFromGeolocationPosition = void 0;
+exports.__esModule = true;
 function modelFromGeolocationPosition(data) {
     return {
         coords: {

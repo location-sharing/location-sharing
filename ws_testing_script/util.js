@@ -1,19 +1,18 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSessionTestWebSocket = exports.objectToQueryString = void 0;
-const ws_1 = require("ws");
+exports.__esModule = true;
+var ws_1 = require("ws");
 function objectToQueryString(obj) {
-    const keyValuePairs = Array();
-    Object.keys(obj).forEach(key => {
-        keyValuePairs.push(`${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`);
+    var keyValuePairs = Array();
+    Object.keys(obj).forEach(function (key) {
+        keyValuePairs.push(encodeURIComponent(key) + "=" + encodeURIComponent(obj[key]));
     });
     return keyValuePairs.join('&');
 }
 exports.objectToQueryString = objectToQueryString;
-const sessionWsUrl = "ws://localhost:8080";
-const getSessionTestWebSocket = (groupId, userId, username) => new ws_1.WebSocket(`${sessionWsUrl}/test?` + objectToQueryString({
-    userId,
-    username,
-    groupId,
-}));
-exports.getSessionTestWebSocket = getSessionTestWebSocket;
+// ws://localhost/connections
+var sessionWsUrl = process.env.API_SESSION_SERVICE_WS;
+exports.getSessionTestWebSocket = function (groupId, userId, username) { return new ws_1.WebSocket(sessionWsUrl + "/test?" + objectToQueryString({
+    userId: userId,
+    username: username,
+    groupId: groupId
+})); };

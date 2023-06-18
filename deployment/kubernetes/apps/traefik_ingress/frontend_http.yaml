@@ -1,0 +1,16 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: frontend-service
+  namespace: apps
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`location-sharing-app.duckdns.org`) || Host(`localhost`)
+    services:
+    - kind: Service
+      name: frontend-service
+      namespace: apps
+      port: 80 

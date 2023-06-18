@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Button from "../../components/base/Button";
 import Heading from "../../components/base/Heading";
@@ -8,8 +8,8 @@ import ErrorAlert from "../../components/base/alerts/ErrorAlert";
 import GroupDetail from "../../models/group/GroupDetail";
 import { LINKS, LinkType } from "../../router/router";
 import useAuth, { AuthenticatedUser } from "../../services/auth";
-import { getErrorFromResponse } from "../../util/util";
 import { fetchGroup, removeGroupMember } from "../../services/groups";
+import { getErrorFromResponse } from "../../util/util";
 
 
 export default function GroupDetailPage() {
@@ -23,7 +23,7 @@ export default function GroupDetailPage() {
   const [error, setError] = useState<string>()
   const [group, setGroup] = useState<GroupDetail>()
 
-  const loadGroup = useCallback(async (groupId: string, user: AuthenticatedUser) => {
+  const loadGroup = async (groupId: string, user: AuthenticatedUser) => {
     // if there is no group in the state fetch the data
     const groupFromLocation = location.state
 
@@ -46,9 +46,9 @@ export default function GroupDetailPage() {
     } catch (err) {
       setError("An error occurred")
     }
-  }, [location.state, navigate, removeUser])
+  }
 
-  useEffect(() => { if (groupId && user) loadGroup(groupId, user) }, [loadGroup, groupId, user])
+  useEffect(() => { if (groupId && user) loadGroup(groupId, user) }, [])
 
   const leaveGroup = async () => {
     const res = await removeGroupMember(groupId!, user!.userId, user!.token)

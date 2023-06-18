@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: location-sharing-app-cert
+  namespace: apps
+spec:
+  dnsNames:
+  - 'location-sharing-app.duckdns.org'
+  issuerRef:
+    name: cert-manager-webhook-duckdns-staging
+    kind: ClusterIssuer
+  secretName: location-sharing-app-tls-secret

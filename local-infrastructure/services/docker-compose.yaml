@@ -1,5 +1,5 @@
 version: '3.8'
-name: "location-sharing-app"
+# name: "location-sharing-app"
 services:
 
   kafka_zookeeper:
@@ -110,11 +110,11 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka_broker:9092
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/group_service_test
 
-  frontend:
-    container_name: frontend
-    image: frontend
-    ports:
-      - "3000:80"
+  # frontend:
+  #   container_name: frontend
+  #   image: frontend
+  #   ports:
+  #     - "3000:80"
 
 # volumes:
 #     postgres:
