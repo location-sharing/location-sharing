@@ -1,6 +1,8 @@
 package edu.controller.exception
 
-import edu.service.ResourceNotFoundException
+import edu.service.exception.GroupOperationForbiddenException
+import edu.service.exception.ResourceNotFoundException
+import edu.service.exception.ServiceException
 import edu.service.exception.ValidationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -32,14 +34,26 @@ class GlobalExceptionHandler {
             .body(webException)
     }
 
-    @ExceptionHandler(ForbiddenException::class)
-    fun handle(e: ForbiddenException): ResponseEntity<WebException> {
+    @ExceptionHandler(GroupOperationForbiddenException::class)
+    fun handle(e: GroupOperationForbiddenException): ResponseEntity<WebException> {
         val webException = WebException(
             "Forbidden",
             e.message
         )
         return ResponseEntity
             .status(HttpStatus.FORBIDDEN)
+            .body(webException)
+    }
+
+    @ExceptionHandler(ServiceException::class)
+    fun handle(e: ServiceException): ResponseEntity<WebException> {
+        val webException = WebException(
+            "Internal server error",
+            e.message
+        )
+        e.printStackTrace()
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(webException)
     }
 

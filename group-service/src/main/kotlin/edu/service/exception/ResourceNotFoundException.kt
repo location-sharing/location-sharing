@@ -1,4 +1,4 @@
-package edu.service
+package edu.service.exception
 
 class ResourceNotFoundException(
     message: String?

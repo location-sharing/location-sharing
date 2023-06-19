@@ -1,5 +1,5 @@
 package edu.dto
 
-data class GroupUpdateDto(
+data class GroupPatchDto(
     val name: String
 )

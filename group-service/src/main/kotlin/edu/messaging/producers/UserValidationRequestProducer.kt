@@ -28,6 +28,10 @@ class UserValidationRequestProducer(
             jsonBytes
         )
 
-        return super.sendWithResultLogging(SenderRecord.create(record, event)).awaitSingle()
+        return super.sendWithResultLogging(SenderRecord.create(record, event))
+            .doOnNext {
+                log.info("sent user validation request $event")
+            }
+            .awaitSingle()
     }
 }

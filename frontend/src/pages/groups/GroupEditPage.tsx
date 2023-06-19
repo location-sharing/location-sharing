@@ -37,7 +37,9 @@ export default function GroupEditPage() {
     const res = await updateGroup(groupId!, group, user!.token)
     if (res.ok) {
       const editedGroup: GroupDetail = await res.json()
-      navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: editedGroup.id}), {state: editedGroup})
+      console.log(editedGroup);
+      
+      navigate(LINKS[LinkType.GROUP_DETAIL].build({groupId: editedGroup.id}))
     } else if (res.status === httpStatus.UNAUTHORIZED) {
       removeUser()
       navigate(LINKS[LinkType.LOGIN].build())

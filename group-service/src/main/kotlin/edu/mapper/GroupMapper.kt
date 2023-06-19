@@ -3,8 +3,8 @@ package edu.mapper
 import edu.dto.GroupCreateDto
 import edu.dto.GroupDetailDto
 import edu.dto.GroupDto
-import edu.dto.GroupUpdateDto
-import edu.repository.model.Group
+import edu.dto.GroupPatchDto
+import edu.model.Group
 
 object GroupMapper {
 
@@ -36,7 +36,7 @@ object GroupMapper {
         )
     }
 
-    fun patchEntity(group: Group, dto: GroupUpdateDto): Group {
+    fun patchEntity(group: Group, dto: GroupPatchDto): Group {
         return Group(
             group.id,
             dto.name,

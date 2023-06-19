@@ -4,8 +4,8 @@ import edu.location.sharing.events.validation.group.user.GroupUserValidationRequ
 import edu.location.sharing.events.validation.group.user.GroupUserValidationResultEvent
 import edu.messaging.config.KafkaConfig
 import edu.messaging.producers.GroupUserValidationResultProducer
-import edu.service.ResourceNotFoundException
 import edu.service.UserGroupService
+import edu.service.exception.ResourceNotFoundException
 import edu.util.logger
 import edu.util.objectMapper
 import kotlinx.coroutines.reactor.mono

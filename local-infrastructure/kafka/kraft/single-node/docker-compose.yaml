@@ -3,7 +3,7 @@ name: "kafka-single-node"
 services:
   kafka1:
     image: confluentinc/cp-kafka:7.3.2
-    container_name: kafka1
+    container_name: kafka-kraft-single-node
     ports:
       - "9092:9092"
       - "9997:9997"
@@ -30,7 +30,7 @@ services:
     command: "bash -c '/tmp/run_workaround.sh && /etc/confluent/docker/run'"
 
   kafka-ui:
-    container_name: kafka-ui
+    container_name: kafka-kraft-single-node-ui
     image: provectuslabs/kafka-ui:latest
     ports:
       - 8081:8080

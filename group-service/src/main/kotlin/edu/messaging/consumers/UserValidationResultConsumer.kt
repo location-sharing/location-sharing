@@ -5,6 +5,7 @@ import edu.location.sharing.events.validation.user.UserValidationPurpose
 import edu.location.sharing.events.validation.user.UserValidationResultEvent
 import edu.messaging.config.KafkaConfig
 import edu.service.GroupService
+import edu.service.exception.ServiceException
 import edu.util.logger
 import edu.util.objectMapper
 import kotlinx.coroutines.reactor.mono
@@ -44,10 +45,21 @@ class UserValidationResultConsumer(
                 val validatedUser = event.user!!
                 when(event.metadata.purpose) {
                     UserValidationPurpose.GROUP_ADD_USER -> mono {
-                        groupService.addGroupUserFromEvent(groupId, ownerId, validatedUser)
+                        try {
+                            groupService.addGroupUserFromEvent(groupId, ownerId, validatedUser)
+                            // TODO: send notification to client
+
+                        } catch (e: ServiceException) {
+                            // TODO: send notification to client
+                        }
                     }
                     UserValidationPurpose.GROUP_CHANGE_OWNER -> mono {
-                        groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
+                        try {
+                            groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
+                            // TODO: send notification to client
+                        } catch (e: ServiceException) {
+                            // TODO: send notification to client
+                        }
                     }
                 }
             }

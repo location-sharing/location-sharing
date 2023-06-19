@@ -40,7 +40,7 @@ abstract class GenericProducer(
         val metadata = result.recordMetadata()
         val record = result.correlationMetadata()
         val time = Instant.ofEpochMilli(metadata.timestamp())
-        log.info(
+        log.debug(
             "record $record sent successfully, topic=${metadata.topic()} partition=${metadata.partition()} " +
                     "offset=${metadata.offset()} timestamp=$time"
         )

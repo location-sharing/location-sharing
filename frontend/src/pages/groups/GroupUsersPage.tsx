@@ -128,7 +128,7 @@ export default function GroupUsersPage() {
           <div className="my-12">
             <h4 className="font-medium w-full mb-4">Members:</h4>
             <ul className="max-h-44 overflow-auto w-full">
-              {group?.users.map((user: GroupUser) => 
+              { group && group.users ? group?.users.map((user: GroupUser) => 
                 <li className="flex flex-row gap-x-4 mb-3 items-center w-full justify-between" key={user.name}>
                   <div className="flex flex-row items-center gap-x-3">
                     <p className="text-lg">{user.name}</p>
@@ -147,7 +147,10 @@ export default function GroupUsersPage() {
                     null
                   }
                 </li>
-              )}
+              )
+              :
+              null
+              }
             </ul>
           </div>
 

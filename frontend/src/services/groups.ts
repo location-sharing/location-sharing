@@ -47,6 +47,16 @@ export const updateGroup = (groupId: string, group: GroupUpdate, token: string) 
   }
 )
 
+export const deleteGroup = (groupId: string, token: string) => fetch(
+  `${groupsUrl}/${groupId}`,
+  {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+  }
+)
+
 export const addGroupMember = (groupId: string, username: string, token: string) => fetch(
   `${groupsUrl}/${groupId}/users?` + objectToQueryString({ username }),
   {

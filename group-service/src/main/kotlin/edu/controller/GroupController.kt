@@ -3,12 +3,13 @@ package edu.controller
 import edu.dto.GroupCreateDto
 import edu.dto.GroupDetailDto
 import edu.dto.GroupDto
-import edu.dto.GroupUpdateDto
+import edu.dto.GroupPatchDto
 import edu.mapper.GroupMapper
 import edu.security.jwt.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
 import edu.service.exception.ValidationException
+import edu.util.logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.springframework.http.ResponseEntity
@@ -21,6 +22,8 @@ class GroupController(
     val groupService: GroupService,
     val userGroupService: UserGroupService,
 ) {
+
+    val log = logger()
 
     @GetMapping
     suspend fun getUserGroups(
@@ -57,7 +60,7 @@ class GroupController(
     @PatchMapping("/{id}")
     suspend fun updateGroup(
         @PathVariable id: String,
-        @RequestBody updateDto: GroupUpdateDto,
+        @RequestBody updateDto: GroupPatchDto,
         @AuthenticationPrincipal user: AuthenticatedUser,
     ): ResponseEntity<GroupDto> {
         val group = groupService.patch(id, updateDto, user.id)
@@ -91,6 +94,7 @@ class GroupController(
         } else if (username != null) {
             groupService.addGroupUserByUsername(groupId, user.id, username)
         } else {
+            log.debug("userId or username URL parameter must be specified")
             throw ValidationException("Either userId or username URL parameters must be specified.")
         }
         return ResponseEntity.accepted().build()
@@ -108,6 +112,7 @@ class GroupController(
         } else if (username != null) {
             groupService.removeGroupUserByUsername(groupId, user, username)
         } else {
+            log.debug("userId or username URL parameter must be specified")
             throw ValidationException("Either userId or username URL parameters must be specified.")
         }
         return ResponseEntity.noContent().build()
@@ -125,6 +130,7 @@ class GroupController(
         } else if (username != null) {
             groupService.changeOwnerByUsername(id, user, username)
         } else {
+            log.debug("userId or username URL parameter must be specified")
             throw ValidationException("Either userId or username URL parameters must be specified.")
         }
         return ResponseEntity.accepted().build()

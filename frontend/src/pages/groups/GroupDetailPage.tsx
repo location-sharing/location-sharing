@@ -8,7 +8,7 @@ import ErrorAlert from "../../components/base/alerts/ErrorAlert";
 import GroupDetail from "../../models/group/GroupDetail";
 import { LINKS, LinkType } from "../../router/router";
 import useAuth, { AuthenticatedUser } from "../../services/auth";
-import { fetchGroup, removeGroupMember } from "../../services/groups";
+import { deleteGroup, fetchGroup, removeGroupMember } from "../../services/groups";
 import { getErrorFromResponse } from "../../util/util";
 
 
@@ -27,11 +27,14 @@ export default function GroupDetailPage() {
     // if there is no group in the state fetch the data
     const groupFromLocation = location.state
 
+    console.log("group from location");
+    console.log(groupFromLocation);
+
     try {
       if (!groupFromLocation) {
         const res = await fetchGroup(groupId, user.token)
   
-        if (res.status === httpStatus.OK) {  
+        if (res.ok) {  
           setGroup(await res.json())
         } else if (res.status === httpStatus.UNAUTHORIZED) {
           removeUser()
@@ -63,6 +66,19 @@ export default function GroupDetailPage() {
     }
   }
 
+  const removeGroup = async () => {
+    const res = await deleteGroup(groupId!, user!.token)
+    if (res.ok) {  
+      navigate(LINKS[LinkType.GROUPS].build())
+    } else if (res.status === httpStatus.UNAUTHORIZED) {
+      removeUser()
+      navigate(LINKS[LinkType.LOGIN].build())
+    } else {
+      const errorResponse = await getErrorFromResponse(res)
+      setError(errorResponse ? errorResponse.detail : "An error occurred")
+    }
+  }
+
   const isOwner = (userId: string) => userId === group?.ownerId
 
   const renderGroup = () => {
@@ -76,12 +92,14 @@ export default function GroupDetailPage() {
           <div className="grid grid-cols-2">
             <h4 className="font-medium text-xl">Members:</h4>
             <ul className="max-h-44 overflow-auto">
-              {group!.users.map(user => 
-                <li className="flex flex-row gap-x-4 mb-3" key={user.name}>
-                  <p className="text-lg">{user.name}</p>
-                  { isOwner(user.id) ? <Tag>Owner</Tag> : null}
-                </li>
-              )}
+              {group && group.users ? group.users.map(user => 
+                  <li className="flex flex-row gap-x-4 mb-3" key={user.name}>
+                    <p className="text-lg">{user.name}</p>
+                    { isOwner(user.id) ? <Tag>Owner</Tag> : null}
+                  </li>)
+                :
+                null
+              }
             </ul>
           </div>
         </div>
@@ -103,6 +121,9 @@ export default function GroupDetailPage() {
                 {state: group}
               )}>
                 Edit
+              </Button>
+              <Button btnType="danger" onClick={removeGroup}>
+                Delete
               </Button>
             </div>
             :
