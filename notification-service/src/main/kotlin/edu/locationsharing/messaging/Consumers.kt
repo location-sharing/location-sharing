@@ -1,6 +1,6 @@
 package edu.locationsharing.messaging
 
-import edu.locationsharing.models.SystemNotification
+import edu.locationsharing.models.UserNotification
 import edu.locationsharing.service.NotificationSink
 import edu.locationsharing.util.logger
 import org.springframework.context.annotation.Bean
@@ -15,7 +15,7 @@ class Consumers {
     val log = logger()
 
     @Bean
-    fun systemNotificationConsumer(): Function<Flux<SystemNotification>, Mono<Void>> = Function {
+    fun userNotificationConsumer(): Function<Flux<UserNotification>, Mono<Void>> = Function {
         flux ->
         flux
             .doOnNext {

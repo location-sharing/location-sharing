@@ -2,13 +2,13 @@ spring:
   cloud:
     stream:
       function:
-        definition: systemNotificationConsumer
+        definition: userNotificationConsumer
       kafka:
         binder:
           brokers: localhost:9092
       bindings:
-        systemNotificationConsumer-in-0:
-          destination: notifications
+        userNotificationConsumer-in-0:
+          destination: user-notifications
           contentType: application/json
 
 
