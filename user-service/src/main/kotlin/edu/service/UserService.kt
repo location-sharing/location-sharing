@@ -3,7 +3,10 @@ package edu.service
 import edu.dto.user.UserCreateDto
 import edu.dto.user.UserDto
 import edu.dto.user.UserUpdateDto
+import edu.location.sharing.events.notifications.SystemNotification
+import edu.location.sharing.events.notifications.UserNotification
 import edu.mapper.UserMapper
+import edu.messaging.producers.SystemNotificationProducer
 import edu.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,7 +18,8 @@ import java.util.*
 class UserService(
     val userRepository: UserRepository,
     val passwordEncoder: PasswordEncoder,
-) {
+    val systemNotificationProducer: SystemNotificationProducer,
+    ) {
     suspend fun findById(id: String): UserDto {
 
         val uuid = UUID.fromString(id)
@@ -64,17 +68,30 @@ class UserService(
 
         user.username = updateDto.username
 
-        val updatedUser = withContext(Dispatchers.IO) {
-            userRepository.save(user)
+        return withContext(Dispatchers.IO) {
+            val updatedUser = userRepository.save(user)
+            // system notification so dependencies update user-related data (group-service, etc.)
+            systemNotificationProducer.sendWithResultLogging(
+                SystemNotification(
+                    SystemNotification.Type.USER_UPDATE,
+                    userId = id
+                )
+            )
+            UserMapper.from(updatedUser)
         }
-
-        return UserMapper.from(updatedUser)
     }
 
     suspend fun delete(id: String) {
         val uuid = UUID.fromString(id)
         withContext(Dispatchers.IO) {
             userRepository.deleteById(uuid)
+            // system notification so dependencies remove user-related data (group-service, etc.)
+            systemNotificationProducer.sendWithResultLogging(
+                SystemNotification(
+                    SystemNotification.Type.USER_DELETE,
+                    userId = id
+                )
+            )
         }
     }
 }

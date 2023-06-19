@@ -10,6 +10,7 @@ import GroupUsersPage from '../pages/groups/GroupUsersPage';
 import GroupsPage from '../pages/groups/GroupsPage';
 import SessionPage from '../pages/sessions/SessionPage';
 import ProtectedRoutes from './ProtectedRoutes';
+import ErrorBoundary from '../components/error-boundary/ErrorBoundary';
 
 export enum LinkType {
   HOME,
@@ -110,15 +111,11 @@ const router = createBrowserRouter([
             path: LINKS[LinkType.GROUP_USERS].template,
             element: <GroupUsersPage />,
           },
-          // {
-          //   path: LINKS[LinkType.GROUP_SESSIONS].template,
-          //   element: <SessionPage/>
-          // }
+          {
+            path: LINKS[LinkType.GROUP_SESSIONS].template,
+            element: <SessionPage/>
+          }
         ]
-      },
-      {
-        path: LINKS[LinkType.GROUP_SESSIONS].template,
-        element: <SessionPage/>
       },
       {
         path: LINKS[LinkType.WILDCARD].template,

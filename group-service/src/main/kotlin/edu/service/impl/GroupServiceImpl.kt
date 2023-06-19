@@ -2,9 +2,13 @@ package edu.service.impl
 
 import edu.dto.GroupCreateDto
 import edu.dto.GroupPatchDto
+import edu.location.sharing.events.notifications.SystemNotification
+import edu.location.sharing.events.notifications.UserNotification
 import edu.location.sharing.events.validation.user.*
 import edu.mapper.GroupMapper
 import edu.mapper.UserMapper
+import edu.messaging.producers.SystemNotificationProducer
+import edu.messaging.producers.UserNotificationProducer
 import edu.messaging.producers.UserValidationRequestProducer
 import edu.model.Group
 import edu.repository.GroupRepository
@@ -30,6 +34,8 @@ class GroupServiceImpl(
     val groupRepository: GroupRepository,
     val userValidationRequestProducer: UserValidationRequestProducer,
     val userGroupService: UserGroupService,
+    val systemNotificationProducer: SystemNotificationProducer,
+    val userNotificationProducer: UserNotificationProducer,
 
     @Value("\${max_groups_per_user}")
     val maxGroupsPerUser: Int,
@@ -40,11 +46,11 @@ class GroupServiceImpl(
 
     val log = logger()
 
-    override suspend fun create(dto: GroupCreateDto, ownerId: String): Group {
+    override suspend fun create(dto: GroupCreateDto, userId: String): Group {
 
-        verifyMaxUserGroupsForUserId(ownerId)
+        verifyMaxUserGroupsForUserId(userId)
 
-        val entity = GroupMapper.toEntity(dto, ownerId)
+        val entity = GroupMapper.toEntity(dto, userId)
         val group = withContext(Dispatchers.IO) {
             try {
                 groupRepository.save(entity)
@@ -54,10 +60,8 @@ class GroupServiceImpl(
             }
         }
         log.info("Created group with id ${group.id}")
-
         // add the owner of the group as a member (with the same flow as adding normal users)
-        addGroupUserById(group.id.toString(), loggedInUserId = ownerId, userToAddId = ownerId)
-
+        addGroupUserById(group.id.toString(), loggedInUserId = userId, userToAddId = userId)
         return group
     }
 
@@ -65,16 +69,29 @@ class GroupServiceImpl(
         val group = findById(id)
         verifyGroupOwner(group, userId)
         val groupToPatch = GroupMapper.patchEntity(group, dto)
-        val patchedGroup = withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             try {
-                groupRepository.save(groupToPatch)
+                val patchedGroup = groupRepository.save(groupToPatch)
+                log.info("Patched group with id $id")
+
+                // send to every group user
+                group.users.forEach { user ->
+                    userNotificationProducer.sendWithResultLogging(
+                        UserNotification(
+                            UserNotification.Type.SUCCESS,
+                            "Info",
+                            "Group ${group.name} changed to ${patchedGroup.name}",
+                            userId = user.id.toString(),
+                            groupId = id
+                        )
+                    )
+                }
+                patchedGroup
             } catch (e: Exception) {
                 log.error("Failed to update group with id $id", e)
                 throw ServiceException("Failed to update group", e)
             }
         }
-        log.info("Patched group with id $id")
-        return patchedGroup
     }
 
     /**
@@ -85,8 +102,32 @@ class GroupServiceImpl(
         val group = runBlocking { findById(id) }
         verifyGroupOwner(group, userId)
         try {
-            groupRepository.deleteById(UUID.fromString(id))
+            groupRepository.deleteById(group.id!!)
             log.info("Deleted group with id $id")
+
+            runBlocking {
+                // system notification so group-dependent services are also consistent
+                val notification = SystemNotification(
+                    SystemNotification.Type.GROUP_DELETE,
+                    userId = userId,
+                    groupId = id
+                )
+                systemNotificationProducer.sendWithResultLogging(notification)
+                log.info("sent system notification $notification")
+
+                // send to every group user
+                group.users.forEach {user ->
+                    userNotificationProducer.sendWithResultLogging(
+                        UserNotification(
+                            UserNotification.Type.SUCCESS,
+                            "Success",
+                            "Group ${group.name} removed",
+                            userId = user.id.toString(),
+                            groupId = id
+                        )
+                    )
+                }
+            }
         } catch (e: Exception) {
             log.error("Failed to delete group with id $id", e)
             throw ServiceException("Failed to delete group", e)
@@ -159,7 +200,7 @@ class GroupServiceImpl(
     /**
      * Gets invoked once a user validation request comes in
      */
-    override suspend fun addGroupUserFromEvent(groupId: String, ownerId: String, userEvent: UserEvent): Group {
+    override suspend fun addGroupUserFromEvent(groupId: String, ownerId: String, userEvent: UserEvent) {
         val group = findById(groupId)
 
         val userToAdd = UserMapper.from(userEvent)
@@ -167,12 +208,35 @@ class GroupServiceImpl(
         // only add to the set, let cascading do the rest
         group.users.add(userToAdd)
 
-        return withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             try {
-                groupRepository.save(group)
+                val updatedGroup = groupRepository.save(group)
+                // send to everyone in the group
+                updatedGroup.users.forEach { user ->
+                    userNotificationProducer.sendWithResultLogging(
+                        UserNotification(
+                            UserNotification.Type.SUCCESS,
+                            "Info",
+                            "User ${userToAdd.username} added to group ${group.name}",
+                            userId = user.id.toString(),
+                            groupId = groupId,
+                            groupName = group.name
+                        )
+                    )
+                }
+                updatedGroup
             } catch (e: Exception) {
                 log.error("Failed to save group $groupId with added user ${userEvent.userId}", e)
-                throw ServiceException("Failed added user to group", e)
+                userNotificationProducer.sendWithResultLogging(
+                    UserNotification(
+                        UserNotification.Type.ERROR,
+                        "Error",
+                        "Failed to add ${userToAdd.username} to group ${group.name}",
+                        userId = ownerId,
+                        groupId = groupId,
+                        groupName = group.name
+                    )
+                )
             }
         }
     }
@@ -193,9 +257,27 @@ class GroupServiceImpl(
         withContext(Dispatchers.IO) {
             try {
                 groupRepository.save(group)
+                // system notification so other services update their data
+                val notification = SystemNotification(
+                    SystemNotification.Type.GROUP_USER_DELETE,
+                    userId = removeUserId,
+                    groupId = groupId
+                )
+                systemNotificationProducer.sendWithResultLogging(notification)
+                log.info("sent system notification $notification")
+                userNotificationProducer.sendWithResultLogging(
+                    UserNotification(
+                        UserNotification.Type.SUCCESS,
+                        "Info",
+                        "You have been removed from group ${group.name}",
+                        userId = removeUserId,
+                        groupId = groupId,
+                    )
+                )
+
             } catch (e: Exception) {
                 log.error("Removing user $removeUserId from group $groupId failed", e)
-                throw ServiceException("Removing user from group failed")
+                throw ServiceException("Removing user $removeUserId from group failed")
             }
         }
     }
@@ -215,6 +297,26 @@ class GroupServiceImpl(
         withContext(Dispatchers.IO) {
             try {
                 groupRepository.save(group)
+                // system notification so other services update their data
+                val notification = SystemNotification(
+                    SystemNotification.Type.GROUP_USER_DELETE,
+                    username = removeUsername,
+                    groupId = groupId,
+                    groupName = group.name
+                )
+                systemNotificationProducer.sendWithResultLogging(notification)
+                log.info("sent system notification $notification")
+                userNotificationProducer.sendWithResultLogging(
+                    UserNotification(
+                        UserNotification.Type.SUCCESS,
+                        "Info",
+                        "You have been removed from group ${group.name}",
+                        username = removeUsername,
+                        groupId = groupId,
+                        groupName = group.name
+                    )
+                )
+
             } catch (e: Exception) {
                 log.error("Removing user $removeUsername from group $groupId failed", e)
                 throw ServiceException("Removing user $removeUsername from group failed")
@@ -298,12 +400,22 @@ class GroupServiceImpl(
             group.users.add(UserMapper.from(userEvent))
         }
 
-        return withContext(Dispatchers.IO) {
+        withContext(Dispatchers.IO) {
             try {
                 groupRepository.save(group)
+                userNotificationProducer.sendWithResultLogging(
+                    UserNotification(
+                        UserNotification.Type.SUCCESS,
+                        "Info",
+                        "You have been appointed to the owner of group ${group.name}",
+                        userId = userEvent.userId,
+                        username = userEvent.username,
+                        groupId = groupId,
+                        groupName = group.name
+                    )
+                )
             } catch (e: Exception) {
                 log.error("Failed to save group $groupId when changing owner to ${userEvent.userId}", e)
-                throw ServiceException("Failed to change owner of group", e)
             }
         }
     }

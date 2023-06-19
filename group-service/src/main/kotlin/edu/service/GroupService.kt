@@ -14,7 +14,7 @@ interface GroupService {
 
     suspend fun addGroupUserById(groupId: String, loggedInUserId: String, userToAddId: String)
     suspend fun addGroupUserByUsername(groupId: String, loggedInUserId: String, username: String)
-    suspend fun addGroupUserFromEvent(groupId: String, ownerId: String, userEvent: UserEvent): Group
+    suspend fun addGroupUserFromEvent(groupId: String, ownerId: String, userEvent: UserEvent)
 
     suspend fun removeGroupUserById(groupId: String, loggedInUserId: String, removeUserId: String)
     suspend fun removeGroupUserByUsername(groupId: String, user: AuthenticatedUser, removeUsername: String)

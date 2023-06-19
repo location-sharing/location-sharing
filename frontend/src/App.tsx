@@ -1,20 +1,22 @@
-import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import AuthContext from "./context/AuthContext";
+import ErrorBoundary from "./components/error-boundary/ErrorBoundary";
+import AuthContextProvider from "./context/AuthContext";
+import NotificationProvider from "./context/NotificationContext";
 import PageHeader from "./pages/header/PageHeader";
-import { AuthenticatedUser } from "./services/auth";
+import NotificationPanel from "./pages/notifications/NotificationPanel";
 
 function App() {
 
-  const [user, setUser] = useState<AuthenticatedUser>()
-
   return (
-
-    <AuthContext.Provider value={{ user, setUser }}>
-        <PageHeader/>
-        <Outlet/>
-    </AuthContext.Provider>
-
+    <ErrorBoundary>
+      <NotificationProvider>
+          <AuthContextProvider>
+              <NotificationPanel/>
+              <PageHeader/>
+              <Outlet/>
+          </AuthContextProvider>
+      </NotificationProvider>
+    </ErrorBoundary>
   );
 }
 

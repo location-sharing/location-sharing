@@ -15,5 +15,4 @@ object NotificationSink {
                 it.userId == user.id
             }
     }
-
 }

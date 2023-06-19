@@ -16,3 +16,6 @@ topics:
     user:
       request: validation.user.request
       result: validation.user.result
+  notifications:
+    system: notifications.system
+    user: notifications.user

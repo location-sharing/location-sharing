@@ -13,5 +13,11 @@ class KafkaConfig(
     @Value("\${topics.validation.user.result}")
     val userValidationResultTopic: String,
 
+    @Value("\${topics.notifications.system}")
+    val systemNotificationsTopic: String,
+
+    @Value("\${topics.notifications.user}")
+    val userNotificationsTopic: String,
+
     val kafkaProperties: KafkaProperties,
 )

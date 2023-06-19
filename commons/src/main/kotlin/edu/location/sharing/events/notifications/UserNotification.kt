@@ -1,12 +1,13 @@
-package edu.locationsharing.models
+package edu.location.sharing.events.notifications
 
 class UserNotification(
     val type: Type,
     val title: String,
     val message: String? = null,
-    val userId: String,
-    val groupId: String?= null,
-    val groupName: String? = null,
+    val userId: String? = null,
+    val username: String? = null,
+    val groupId: String? = null,
+    val groupName: String?= null,
 ) {
 
     enum class Type {
@@ -15,7 +16,7 @@ class UserNotification(
 
     override fun toString(): String {
         return """
-            SystemNotification {
+            UserNotification {
                 type: $type,
                 title: $title,
                 message: $message,

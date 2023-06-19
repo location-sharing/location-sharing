@@ -8,7 +8,7 @@ import ErrorAlert from "../../components/base/alerts/ErrorAlert";
 import { ClientMessage, GenericMessage, GeolocationPositionData, LocationMessage, TextMessage, modelFromGeolocationPosition } from "../../models/message/ClientMessage";
 import GroupEvent from "../../models/message/GroupEvent";
 import useAuth from "../../services/auth";
-import { getSessionTestWebSocket } from "../../services/session";
+import { getSessionWebSocket } from "../../services/session";
 import Map from "./Map";
 import { PositionMarker, UserPosition, UserPositions } from "./Positions";
 import "./SessionPage.css";
@@ -73,6 +73,8 @@ export default function SessionPage(){
   const [broadcastMyPosition, setBroadcastMyPosition] = useState<boolean>(false)
   const [userToWatch, setUserToWatch] = useState<string>()
   const [showMarkers, setShowMarkers] = useState<boolean>(false)
+  const [includeEveryoneOnMap, setIncludeEveryoneOnMap] = useState<boolean>(true)
+
   const [showStatsUsername, setShowStatsUsername] = useState<string>()
   const [showStatsPane, setShowStatsPane] = useState<boolean>(false)
   const [showUsersPane, setShowUsersPane] = useState<boolean>(false)
@@ -106,8 +108,7 @@ export default function SessionPage(){
   // ==================  WebSocket   ==================
   // starts to listen to the messages of others
   const startWs = async () => {
-    // const ws = getSessionWebSocket(groupId, user!.token)
-    const ws = getSessionTestWebSocket(groupId!, user!.userId, user!.username)
+    const ws = getSessionWebSocket(groupId!, user!.token)
     ws.onopen = (event) => {
       console.log("websocket handshake done");
     }
@@ -266,7 +267,7 @@ export default function SessionPage(){
         addMarkerToMap(positionMarker)
       }
 
-      if (prevUserPositions[username].positionMarker)
+      // if (prevUserPositions[username].positionMarker)
 
       setChangedUserPosition({...prevUserPositions[username]})
       return {...prevUserPositions}
@@ -284,16 +285,35 @@ export default function SessionPage(){
   
       const { latitude, longitude } = events[events.length-1].coords
       
-      const userPostition = userPositions[userPosition.username]
-      if (userPostition) {
+      if (userPosition) {
         // update marker position
         console.log(`setting marker position for user ${userPosition.username}`);
-        userPostition.positionMarker.marker.setLatLng([latitude, longitude])
+        userPosition.positionMarker.marker.setLatLng([latitude, longitude])
+
+        // update map to accomodate the changed position
+        if (includeEveryoneOnMap) {
+          const bounds = map?.getBounds()
+          if (bounds && !bounds.contains([latitude, longitude])) {
+            const sw = bounds.getSouthWest()
+            const ne = bounds.getNorthEast()
+            const sw_bounds: L.LatLngExpression = [
+              Math.min(sw.lat, latitude),
+              Math.min(sw.lng, longitude)
+            ]
+            const ne_bounds: L.LatLngExpression = [
+              Math.max(ne.lat, latitude),
+              Math.max(ne.lng, longitude)
+            ]
+            map?.fitBounds([sw_bounds, ne_bounds], {
+              maxZoom: map.getZoom()
+            })
+          }
+        }
       }
       console.log(`updated marker for user ${userPosition.username}`);
     } 
-    updateUserMarker(changedUserPosition) 
-  }, [changedUserPosition, userPositions])
+    updateUserMarker(changedUserPosition)     
+  }, [changedUserPosition, userPositions, includeEveryoneOnMap])
 
   const centerMapToPosition = useCallback((position?: L.LatLngExpression) => {
     if (!position) return 
@@ -483,6 +503,7 @@ export default function SessionPage(){
               null
             }
             <Button btnType="basic" onClick={findCurrentPosition}>Find my position</Button>
+            <Button btnType="basic" onClick={() => { setIncludeEveryoneOnMap(prev => !prev) }}>Toggle map lock</Button>
             <Button btnType="basic" onClick={toggleMarkers}>Toggle Markers</Button>
             <Button btnType="basic" onClick={() => { setShowUsersPane(!showUsersPane) }}>Toggle Users</Button>
             <Button btnType="basic" onClick={() => {

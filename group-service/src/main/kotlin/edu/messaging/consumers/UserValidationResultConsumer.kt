@@ -1,14 +1,16 @@
 package edu.messaging.consumers
 
+import edu.location.sharing.events.notifications.UserNotification
 import edu.location.sharing.events.validation.user.AdditionalInfoKey
 import edu.location.sharing.events.validation.user.UserValidationPurpose
 import edu.location.sharing.events.validation.user.UserValidationResultEvent
 import edu.messaging.config.KafkaConfig
+import edu.messaging.producers.UserNotificationProducer
 import edu.service.GroupService
-import edu.service.exception.ServiceException
 import edu.util.logger
 import edu.util.objectMapper
 import kotlinx.coroutines.reactor.mono
+import kotlinx.coroutines.runBlocking
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
@@ -17,6 +19,7 @@ import reactor.core.publisher.Flux
 class UserValidationResultConsumer(
     kafkaConfig: KafkaConfig,
     private val groupService: GroupService,
+    private val userNotificationProducer: UserNotificationProducer,
 ): GenericConsumer(
     kafkaConfig,
     kafkaConfig.userValidationResponseTopic
@@ -34,8 +37,22 @@ class UserValidationResultConsumer(
             }
             .doOnNext {
                 if (!it.valid) {
-                    // TODO: send notification about the validation status
                     log.warn("pending request for user invalid: ${it.message}")
+                    val title = when(it.metadata.purpose) {
+                        UserValidationPurpose.GROUP_ADD_USER -> "Adding user to group failed"
+                        UserValidationPurpose.GROUP_CHANGE_OWNER -> "Changing group owner failed"
+                        else -> "Error"
+                    }
+                    runBlocking {
+                        userNotificationProducer.sendWithResultLogging(
+                            UserNotification(
+                                UserNotification.Type.ERROR,
+                                title = title,
+                                message = it.message ?: "Operation failed",
+                                userId = it.metadata.initiatorUserId,
+                            )
+                        )
+                    }
                 }
             }
             .filter { it.valid }
@@ -45,21 +62,10 @@ class UserValidationResultConsumer(
                 val validatedUser = event.user!!
                 when(event.metadata.purpose) {
                     UserValidationPurpose.GROUP_ADD_USER -> mono {
-                        try {
-                            groupService.addGroupUserFromEvent(groupId, ownerId, validatedUser)
-                            // TODO: send notification to client
-
-                        } catch (e: ServiceException) {
-                            // TODO: send notification to client
-                        }
+                        groupService.addGroupUserFromEvent(groupId, ownerId, validatedUser)
                     }
                     UserValidationPurpose.GROUP_CHANGE_OWNER -> mono {
-                        try {
-                            groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
-                            // TODO: send notification to client
-                        } catch (e: ServiceException) {
-                            // TODO: send notification to client
-                        }
+                        groupService.changeOwnerFromEvent(groupId, ownerId, validatedUser)
                     }
                 }
             }

@@ -22,5 +22,9 @@ topics:
         request: validation.group.user.request
         result: validation.group.user.result
 
+  notifications:
+    system: notifications.system
+    user: notifications.user
+
 max_groups_per_user: 20
 max_users_per_group: 30

@@ -1,6 +1,6 @@
 import jwtDecode, { JwtPayload } from "jwt-decode";
 import { useContext, useEffect } from "react";
-import AuthContext from "../context/AuthContext";
+import {AuthContext} from "../context/AuthContext";
 import AuthTokenResponse from "../models/auth/AuthToken";
 import LoginCredentials from "../models/auth/LoginCredentials";
 import UserCreate from "../models/user/UserCreate";

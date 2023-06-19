@@ -8,7 +8,7 @@ spring:
           brokers: localhost:9092
       bindings:
         userNotificationConsumer-in-0:
-          destination: user-notifications
+          destination: notifications.user
           contentType: application/json
 
 

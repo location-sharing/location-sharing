@@ -26,8 +26,8 @@ class Consumers {
                     log.warn("notification could not be sent into the sink: $result")
                 }
             }
-            .doOnError {
-                log.error("error while consuming notification", it)
+            .onErrorContinue { error, _ ->
+                log.error("error while consuming notification", error)
             }
             .then()
     }

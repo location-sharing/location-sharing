@@ -1,1 +1,1 @@
-rootProject.name = "location-sharing"
+rootProject.name = "notification-service"
