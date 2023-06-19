@@ -16,7 +16,6 @@ class UserGroupService(
         val user = withContext(Dispatchers.IO) {
             userRepository.findById(uuid)
         }
-
         return if (user.isPresent)
             user.get().groups
         else
@@ -27,7 +26,6 @@ class UserGroupService(
         val user = withContext(Dispatchers.IO) {
             userRepository.findByUsername(username)
         }
-
         return if (user.isPresent)
             user.get().groups
         else

@@ -6,9 +6,4 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface GroupRepository: CrudRepository<Group, UUID> {
-
-    fun findByIdAndOwnerId(id: UUID, ownerId: String): Optional<Group>
-
-    fun existsByIdAndOwnerId(id: UUID, ownerId: String): Boolean
-}
+interface GroupRepository: CrudRepository<Group, UUID>

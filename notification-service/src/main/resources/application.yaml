@@ -1,0 +1,30 @@
+spring:
+  cloud:
+    stream:
+      function:
+        definition: systemNotificationConsumer
+      kafka:
+        binder:
+          brokers: localhost:9092
+      bindings:
+        systemNotificationConsumer-in-0:
+          destination: notifications
+          contentType: application/json
+
+
+jwt:
+  secret: "random-key-from-env-var"
+  issuer: "location-sharing-app"
+  audience: "location-sharing-app"
+
+cors:
+  mappings:
+    - url: "/**"
+      originPatterns: "http://localhost:[*]"
+      allowedMethods: "*"
+      allowedHeaders: "*"
+      exposedHeaders: "Authorization"
+      allowCredentials: true
+
+server:
+  port: 8084
