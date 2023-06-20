@@ -16,11 +16,3 @@ export const getSessionWebSocket = (groupId: string, token: string) => new WebSo
     auth: token
   })
 )
-
-export const getSessionTestWebSocket = (groupId: string, userId: string, username: string) => new WebSocket(
-  `${sessionWsUrl}/test?` + objectToQueryString({
-    userId,
-    username,
-    groupId,
-  })
-)

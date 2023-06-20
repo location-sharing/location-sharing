@@ -16,8 +16,6 @@ export default function NotificationPanel() {
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true)
   const [showNotifications, setShowNotifications] = useState<boolean>(true)
 
-  const [eventSource, setEventSource] = useState<EventSource>()
-
   useEffect(() => {
     if (!user || !notificationsEnabled) return;
 
@@ -63,6 +61,8 @@ export default function NotificationPanel() {
         break
     }
   }
+
+  if (!user) return (null);
 
   if (!showNotifications) {
     return (
