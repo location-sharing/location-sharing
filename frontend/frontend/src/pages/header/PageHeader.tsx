@@ -30,7 +30,7 @@ export default function PageHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-white w-full">
+    <header className="sticky top-0 z-50 bg-white w-full drop-shadow-md">
       <div className="flex flex-row justify-between items-center flex-wrap mx-auto sm:w-11/12">
         <Link to={LINKS[LinkType.HOME].build()}>
           <Heading>Demo</Heading>

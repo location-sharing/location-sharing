@@ -1,0 +1,16 @@
+#homePage {
+  background-image: url(../../../public/topography.svg);
+  z-index: 50;
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  /* overflow: hidden; */
+  /* background-color: #DFDBE5; */
+  /* opacity: 0.2; */
+  /* %  23755f00 */
+  fill: #efefee;
+  fill-opacity: 0.23;
+}
