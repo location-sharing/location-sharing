@@ -29,6 +29,11 @@ repositories {
 }
 
 dependencies {
+
+    /********************* Inter-project dependencies *********************/
+    implementation(project(":commons"))
+    /*********************************************************************/
+
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
@@ -37,17 +42,11 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt:$ktor_version")
     implementation("io.ktor:ktor-server-cors:$ktor_version")
 
-
     implementation("org.apache.kafka:kafka-clients:3.4.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.0")
 
-    /********************* Inter-project dependencies *********************/
-    implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")
-    implementation("io.ktor:ktor-server-auth-jvm:2.3.0")
-    implementation("io.ktor:ktor-server-auth-jwt-jvm:2.3.0")
     implementation("io.ktor:ktor-server-cors-jvm:2.3.0")
-    /*********************************************************************/
 
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

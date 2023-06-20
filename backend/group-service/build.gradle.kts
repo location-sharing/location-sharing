@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.spring") version "1.8.21"
 }
 
-group = "edu."
+group = "edu.location-sharing"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
@@ -23,6 +23,11 @@ repositories {
 }
 
 dependencies {
+
+    /********************* Inter-project dependencies *********************/
+    implementation(project(":commons"))
+    /*********************************************************************/
+
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
@@ -38,10 +43,6 @@ dependencies {
 
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.auth0:java-jwt:4.3.0")
-
-    /********************* Inter-project dependencies *********************/
-    implementation("edu.location-sharing:commons:0.0.1-SNAPSHOT")
-    /*********************************************************************/
 
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")

@@ -7,7 +7,7 @@ plugins {
 	kotlin("plugin.spring") version "1.8.21"
 }
 
-group = "edu"
+group = "edu.location-sharing"
 version = "0.0.1-SNAPSHOT"
 
 java {
@@ -27,6 +27,11 @@ repositories {
 extra["springCloudVersion"] = "2022.0.3"
 
 dependencies {
+
+	/********************* Inter-project dependencies *********************/
+	implementation(project(":commons"))
+	/*********************************************************************/
+
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")

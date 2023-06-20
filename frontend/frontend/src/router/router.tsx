@@ -1,16 +1,15 @@
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
-import HomePage from '../pages/HomePage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
 import GroupCreatePage from '../pages/groups/GroupCreatePage';
 import GroupDetailPage from '../pages/groups/GroupDetailPage';
 import GroupEditPage from '../pages/groups/GroupEditPage';
 import GroupUsersPage from '../pages/groups/GroupUsersPage';
 import GroupsPage from '../pages/groups/GroupsPage';
+import HomePage from '../pages/home/HomePage';
+import LoginPage from '../pages/login/LoginPage';
+import RegisterPage from '../pages/register/RegisterPage';
 import SessionPage from '../pages/sessions/SessionPage';
 import ProtectedRoutes from './ProtectedRoutes';
-import ErrorBoundary from '../components/error-boundary/ErrorBoundary';
 
 export enum LinkType {
   HOME,

@@ -73,7 +73,7 @@ export default function SessionPage(){
   const [broadcastMyPosition, setBroadcastMyPosition] = useState<boolean>(false)
   const [userToWatch, setUserToWatch] = useState<string>()
   const [showMarkers, setShowMarkers] = useState<boolean>(false)
-  const [includeEveryoneOnMap, setIncludeEveryoneOnMap] = useState<boolean>(true)
+  const [includeEveryoneOnMap, setIncludeEveryoneOnMap] = useState<boolean>(false)
 
   const [showStatsUsername, setShowStatsUsername] = useState<string>()
   const [showStatsPane, setShowStatsPane] = useState<boolean>(false)

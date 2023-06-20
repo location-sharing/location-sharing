@@ -1,11 +1,11 @@
 import { NotificationContext } from "../../context/NotificationContext";
 import {useContext, useEffect, useState} from "react"
 import Notification, { UserNotification } from "../../models/notification/UserNotification";
-import Alert from "../../components/base/alerts/Alert";
-import ErrorAlert from "../../components/base/alerts/ErrorAlert";
+import Alert from "../base/alerts/Alert";
+import ErrorAlert from "../base/alerts/ErrorAlert";
 import useAuth from "../../services/auth";
 import { generateRandomString } from "../../util/util";
-import Button from "../../components/base/Button";
+import Button from "../base/Button";
 
 
 
@@ -50,7 +50,6 @@ export default function NotificationPanel() {
           message={notification.message ?? ""}
           onClose={() => removeNotification(notification.id)}
         ></Alert>
-        break
       case "ERROR": 
         return <ErrorAlert 
           key={notification.id}
@@ -58,7 +57,6 @@ export default function NotificationPanel() {
           message={notification.message ?? ""}
           onClose={() => removeNotification(notification.id)}
         ></ErrorAlert>
-        break
     }
   }
 

@@ -3,7 +3,7 @@ import ErrorBoundary from "./components/error-boundary/ErrorBoundary";
 import AuthContextProvider from "./context/AuthContext";
 import NotificationProvider from "./context/NotificationContext";
 import PageHeader from "./pages/header/PageHeader";
-import NotificationPanel from "./pages/notifications/NotificationPanel";
+import NotificationPanel from "./components/notifications/NotificationPanel";
 
 function App() {
 
