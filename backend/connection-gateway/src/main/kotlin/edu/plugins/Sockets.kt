@@ -71,6 +71,8 @@ fun Application.configureSockets() {
         webSocket("/test") {
             LOG.info("TEST: got websocket request")
 
+            // TODO: we could have a special token in this case, and verify that so not everyone can connect here :))
+
             val username = call.request.queryParameters["username"]
             val userId = call.request.queryParameters["userId"]
             if (username == null || userId == null) {
@@ -80,17 +82,16 @@ fun Application.configureSockets() {
 
             val user = AuthenticatedUser(userId, username)
 
-            // validate the group
-            val groupId = verifyGroup() ?: return@webSocket
+            val groupId = verifyGroupParam() ?: return@webSocket
 
             if (!userGroupConnectionsEmpty(groupId, user)) {
                 // group membership already validated, but this particular connection has not been added
                 storeConnection(groupId, user, this)
                 LOG.info("TEST: received message from user: ${user.id}")
             } else {
+                // don't validate group membership in the test case
                 LOG.info("TEST: group membership validation skipped, storing connection")
                 storeConnection(groupId, user, this@webSocket)
-
                 sendConnectedNotificationEvent(groupId, user)
                 LOG.info("user ${user.id} connected to group $groupId, connection ${this@webSocket} stored")
             }
@@ -125,7 +126,7 @@ fun Application.configureSockets() {
             // TODO: we could send a notification event saying that the user is online
 
             // validate the group
-            val groupId = verifyGroup() ?: return@webSocket
+            val groupId = verifyGroupParam() ?: return@webSocket
 
             val connectionValid = AtomicBoolean(false)
             if (!userGroupConnectionsEmpty(groupId, user)) {
@@ -199,7 +200,7 @@ private suspend fun WebSocketServerSession.verifyAuthToken(): AuthenticatedUser?
     return JwtUtils.toAuthenticatedUser(decodedJwt)
 }
 
-private suspend fun WebSocketServerSession.verifyGroup(): String? {
+private suspend fun WebSocketServerSession.verifyGroupParam(): String? {
     val groupId = call.request.queryParameters["groupId"]
     if (groupId == null) {
         close(CloseReason(

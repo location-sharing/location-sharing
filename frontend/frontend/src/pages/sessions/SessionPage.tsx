@@ -26,7 +26,7 @@ const buildPositionMarker = (
   const iconMarkup = renderToStaticMarkup(
     <div 
       id={iconDOMId} 
-      className={`-top-[23px] border-[12px] bg-transparent border-solid rounded-ss-[50%] rounded-se-[50%] rounded-ee-[50%] absolute w-6 h-6 transform -rotate-45 ring-1 ring-slate-500 shadow-md shadow-gray-400`}
+      className={`-top-[23px] border-[15px] bg-transparent border-solid rounded-ss-[50%] rounded-se-[50%] rounded-ee-[50%] absolute w-6 h-6 transform -rotate-45 ring-1 ring-slate-500 shadow-md shadow-gray-400`}
     ></div>
   )
   const icon =  L.divIcon({

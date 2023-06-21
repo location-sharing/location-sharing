@@ -140,6 +140,10 @@ class GroupServiceImpl(
      * Sends out a validation event to fetch data about the user we're trying to add
      */
     override suspend fun addGroupUserById(groupId: String, loggedInUserId: String, userToAddId: String) {
+
+        // TODO: check if the user to add is in the database already and just link it,
+        // TODO: don't publish validation requests in this case
+
         val group = findById(groupId)
         verifyGroupOwner(group, loggedInUserId)
 
@@ -173,6 +177,10 @@ class GroupServiceImpl(
      * Sends out a validation event to fetch data about the user we're trying to add
      */
     override suspend fun addGroupUserByUsername(groupId: String, loggedInUserId: String, username: String) {
+
+        // TODO: check if the user to add is in the database already and just link it,
+        // TODO: don't publish validation requests in this case
+
         val group = findById(groupId)
         verifyGroupOwner(group, loggedInUserId)
 
