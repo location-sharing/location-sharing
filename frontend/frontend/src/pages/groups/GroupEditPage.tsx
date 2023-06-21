@@ -50,7 +50,7 @@ export default function GroupEditPage() {
   }
 
   return (
-    <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-1/2 mx-auto px-4">
+    <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-[300px] sm:h-[500px] mx-auto px-4">
       { error ? 
         <div className="relative bottom-12 mx-auto">
           <ErrorAlert title="Error while updating group" message={error} onClose={() => setError(undefined)}/> 

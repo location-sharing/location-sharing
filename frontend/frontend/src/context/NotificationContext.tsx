@@ -25,7 +25,7 @@ export default function NotificationProvider(props: PropsWithChildren) {
       title: notificationTitle,
       message: message,
     }
-    setNotifications(prevNotifications => [...prevNotifications, notification])
+    setNotifications(prevNotifications => [notification, ...prevNotifications])
   }
 
   const error = (message: string, title?: string) => {
@@ -36,11 +36,11 @@ export default function NotificationProvider(props: PropsWithChildren) {
       title: notificationTitle,
       message: message,
     }
-    setNotifications(prevNotifications => [...prevNotifications, notification])
+    setNotifications(prevNotifications => [notification, ...prevNotifications])
   }
 
   const addNotification = (notification: Notification) => {
-    setNotifications(prevNotifications => [...prevNotifications, notification])
+    setNotifications(prevNotifications => [notification, ...prevNotifications])
   }
 
   const removeNotification = (id: string) => {

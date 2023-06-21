@@ -106,7 +106,7 @@ export default function GroupUsersPage() {
   const isOwner = (userId: string) => userId === group?.ownerId
 
   return (
-    <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-1/2 mx-auto px-4">
+    <section className="relative w-full top-12 sm:top-28 sm:max-w-2xl h-[300px] sm:h-[500px] mx-auto px-4">
       { error ? 
         <div className="relative bottom-12 mx-auto">
           <ErrorAlert title="Error while updating group" message={error} onClose={() => setError(undefined)}/> 
@@ -122,10 +122,10 @@ export default function GroupUsersPage() {
         null
       }
       <Heading className="mb-4">Manage group members</Heading>
-      <div className="w-full h-full border border-solid ring-1 ring-slate-50 rounded-md">
+      <div className="w-full border border-solid ring-1 ring-slate-50 rounded-md">
         
-        <div className="w-3/4 h-full flex flex-col gap-y-4 mx-auto">
-          <div className="my-12">
+        <div className="w-3/4 h-full flex flex-col gap-y-4 mx-auto py-12">
+          <div className="mb-8">
             <h4 className="font-medium w-full mb-4">Members:</h4>
             <ul className="max-h-44 overflow-auto w-full">
               { group && group.users ? group?.users.map((user: GroupUser) => 

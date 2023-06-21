@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service
 class ConsumerInit(
     userValidationResultConsumer: UserValidationResultConsumer,
     groupUserValidationRequestConsumer: GroupUserValidationRequestConsumer,
+    systemNotificationConsumer: SystemNotificationConsumer,
 ){
     init {
         userValidationResultConsumer.createFlux().retry().subscribe()
         groupUserValidationRequestConsumer.createFlux().retry().subscribe()
+        systemNotificationConsumer.createFlux().retry().subscribe()
     }
 }

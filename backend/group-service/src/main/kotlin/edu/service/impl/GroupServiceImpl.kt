@@ -12,6 +12,7 @@ import edu.messaging.producers.UserNotificationProducer
 import edu.messaging.producers.UserValidationRequestProducer
 import edu.model.Group
 import edu.repository.GroupRepository
+import edu.repository.UserRepository
 import edu.security.jwt.AuthenticatedUser
 import edu.service.GroupService
 import edu.service.UserGroupService
@@ -32,6 +33,7 @@ import java.util.*
 @Service
 class GroupServiceImpl(
     val groupRepository: GroupRepository,
+    val userRepository: UserRepository,
     val userValidationRequestProducer: UserValidationRequestProducer,
     val userGroupService: UserGroupService,
     val systemNotificationProducer: SystemNotificationProducer,

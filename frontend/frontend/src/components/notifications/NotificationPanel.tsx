@@ -11,7 +11,7 @@ import Button from "../base/Button";
 
 export default function NotificationPanel() {
 
-  const { notifications, addNotification, removeNotification } = useContext(NotificationContext)
+  const { notifications, addNotification, removeNotification, clear } = useContext(NotificationContext)
   const { user } = useAuth()
   const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true)
   const [showNotifications, setShowNotifications] = useState<boolean>(true)
@@ -37,7 +37,7 @@ export default function NotificationPanel() {
         console.error(err)
       }
     })
-    return () => { eventSource.close() }
+    return () => { eventSource.close(); clear() }
   }, [user, notificationsEnabled])
 
 

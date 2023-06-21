@@ -74,7 +74,8 @@ class UserService(
             systemNotificationProducer.sendWithResultLogging(
                 SystemNotification(
                     SystemNotification.Type.USER_UPDATE,
-                    userId = id
+                    userId = id,
+                    username = updatedUser.username
                 )
             )
             UserMapper.from(updatedUser)
