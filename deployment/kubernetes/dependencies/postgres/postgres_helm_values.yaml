@@ -2,6 +2,8 @@ postgresql:
   username: postgres
   password: changeme
 
+  replicaCount: 1
+
   initdbScripts:
     setup_user_service.sql: |
       CREATE USER user_service;
@@ -16,7 +18,7 @@ postgresql:
 persistence:
   enabled: true
   storageClass: local-path
-  size: 2Gi
+  size: 250Mi
 
 service:
   ports:

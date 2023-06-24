@@ -24,11 +24,11 @@ spec:
           name: frontend-http
         - containerPort: 443
           name: frontend-https
-        env:
-        - name: DUCKDNS_API_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: frontend-dns-token
-              key: token
+        # env:
+        # - name: DUCKDNS_API_TOKEN
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: frontend-dns-token
+        #       key: token
       imagePullSecrets:
       - name: dockerhub-secret

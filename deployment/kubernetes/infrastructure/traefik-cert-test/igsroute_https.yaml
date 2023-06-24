@@ -1,0 +1,17 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami-https
+  namespace: whoami
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - kind: Rule
+    match: Host(`location-sharing-app.duckdns.org`)
+    services:
+    - name: whoami
+      namespace: whoami
+      port: 80
+  tls:
+    secretName: whoami-tls-secret

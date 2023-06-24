@@ -5,8 +5,8 @@ metadata:
   namespace: apps
 spec:
   dnsNames:
-  - 'location-sharing-app.duckdns.org'
+  - location-sharing-app.duckdns.org
   issuerRef:
-    name: cert-manager-webhook-duckdns-staging
+    name: le-prod-http
     kind: ClusterIssuer
   secretName: location-sharing-app-tls-secret

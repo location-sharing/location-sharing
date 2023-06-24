@@ -1,5 +1,5 @@
 
-replicaCount: 3
+replicaCount: 1
 
 service:
   ports:
@@ -8,7 +8,7 @@ service:
 persistence:
   enabled: true
   storageClass: local-path
-  size: 1Gi
+  size: 250Mi
 
 serviceAccount:
   create: true
@@ -25,7 +25,7 @@ kraft:
 
 zookeeper:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   persistence:
     enabled: true
     storageClass: local-path

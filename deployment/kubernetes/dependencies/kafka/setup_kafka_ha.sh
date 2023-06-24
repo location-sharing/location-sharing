@@ -1,9 +1,13 @@
 #!/bin/bash
 
-kubectl create ns kafka
+# https://github.com/bitnami/charts/tree/main/bitnami/kafka
+# see chart-kafka version mappings
+version="22.1.6"
 
 helm install kafka-ha oci://registry-1.docker.io/bitnamicharts/kafka \
 -n kafka \
+--create-namespace \
+--version "$version" \
 -f kafka_helm_values.yaml
 
 # connection string, on the specified port
