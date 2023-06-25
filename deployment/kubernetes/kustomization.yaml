@@ -3,5 +3,12 @@ kind: Kustomization
 
 resources:
 
-- mongo/
+- infrastructure/tools/
+- infrastructure/cert-manager/
+- infrastructure/traefik-ingress/
+
+- dependencies/postgres/
+- dependencies/kafka/
+
 - apps/
+

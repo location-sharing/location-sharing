@@ -1,0 +1,20 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: traefik
+  namespace: traefik-ingress
+spec:
+  repo: https://traefik.github.io/charts
+  chart: traefik
+  # install traefik v2.10.1
+  # see https://github.com/traefik/traefik-helm-chart
+  version: 23.1.0
+  # use latest helm installer image to date (chart needs v3.9 at least)
+  jobImage: rancher/klipper-helm:v0.8.0-build20230510
+  targetNamespace: traefik-ingress
+  valuesContent: |-
+    logs:
+      general:
+        level: INFO
+      access:
+        enabled: true

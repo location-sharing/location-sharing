@@ -1,0 +1,19 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: connection-gateway-strip-prefix
+  namespace: apps
+spec:
+  stripPrefix:
+    prefixes:
+      - /connections
+---
+# unused for now
+# apiVersion: traefik.containo.us/v1alpha1
+# kind: Middleware
+# metadata:
+#   name: http-to-https
+# spec:
+#   redirectScheme:
+#     scheme: https
+#     permanent: true

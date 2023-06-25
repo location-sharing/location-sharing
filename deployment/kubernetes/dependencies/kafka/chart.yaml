@@ -1,0 +1,42 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: kafka-ha
+  namespace: kafka
+spec:
+  # https://github.com/bitnami/charts/tree/main/bitnami/kafka
+  chart: oci://registry-1.docker.io/bitnamicharts/kafka
+  version: 22.1.6
+  targetNamespace: kafka
+  valuesContent: |-
+    replicaCount: 1
+
+    service:
+      ports:
+        client: 9092
+
+    persistence:
+      enabled: true
+      storageClass: local-path
+      size: 250Mi
+
+    serviceAccount:
+      create: true
+    rbac:
+      create: true
+
+    # provisioning: 
+    #   enabled: true
+    #   topics:
+    #     - ""
+
+    kraft:
+      enabled: false
+
+    zookeeper:
+      enabled: true
+      replicaCount: 1
+      persistence:
+        enabled: true
+        storageClass: local-path
+        size: 200Mi

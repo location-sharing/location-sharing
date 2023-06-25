@@ -1,0 +1,15 @@
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: cert-manager
+  namespace: cert-manager
+spec:
+  # https://github.com/bitnami/charts/tree/main/bitnami/postgresql-ha
+  repo: https://charts.jetstack.io
+  chart: cert-manager
+  # see https://cert-manager.io/docs/installation/supported-releases/
+  version: v1.12.0
+  targetNamespace: cert-manager
+  valuesContent: |-  
+    installCRDs: true
+
