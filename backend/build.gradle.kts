@@ -16,6 +16,14 @@ val reportMergeSarif by tasks.registering(io.gitlab.arturbosch.detekt.report.Rep
   output.set(rootProject.layout.buildDirectory.file("reports/detekt/merge.sarif"))
 }
 
+tasks.register("detektMainAll") {
+  group = "verification"
+//  exec {
+//    isIgnoreExitValue = true
+//  }
+  dependsOn(project.subprojects.map { it.tasks["detektMain"] }.toSet())
+}
+
 subprojects {
 
   apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -41,9 +49,12 @@ subprojects {
     finalizedBy(reportMergeSarif)
   }
 
-//  reportMergeXml.configure {
-//    input.from(tasks.withType(Detekt::class))
-//  }
+  reportMergeXml.configure {
+    input.from(tasks.withType(Detekt::class).map { it.xmlReportFile })
+  }
+  reportMergeSarif.configure {
+    input.from(tasks.withType(Detekt::class).map { it.sarifReportFile })
+  }
 
   dependencies {
     // ktlint wrapper, brings the "formatting" rule set, active by default
