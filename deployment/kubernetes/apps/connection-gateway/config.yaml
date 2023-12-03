@@ -9,4 +9,5 @@ data:
   # idk why but CORS is still required WHYYYY ???
   # it's the same URL, and only the websocket (wss) protocol fails ONLY from browsers
   # with an unknown error
-  CORS_ORIGIN_PATTERN: "http://localhost:[0-9]*|https://localhost:[0-9]*|http://location-sharing-app.duckdns.org|https://location-sharing-app.duckdns.org"
+  # CORS_ORIGIN_PATTERN: "http://localhost:[0-9]*|https://localhost:[0-9]*|http://location-sharing-app.duckdns.org|https://location-sharing-app.duckdns.org"
+  CORS_ORIGIN_PATTERN: "http://localhost:[0-9]*|https://localhost:[0-9]*|http://location-sharing-app-2.duckdns.org|https://location-sharing-app-2.duckdns.org"

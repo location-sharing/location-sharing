@@ -6,7 +6,8 @@ metadata:
     app: connection-gateway
   namespace: apps
 spec:
-  replicas: 1
+  # controlled by hpa
+  # replicas: 1
   selector:
     matchLabels:
       app: connection-gateway
@@ -24,5 +25,10 @@ spec:
         envFrom:
         - configMapRef: 
             name: connection-gateway
+        resources:
+          requests:
+            cpu: 400m
+          limits:
+            cpu: 500m
       imagePullSecrets:
       - name: dockerhub-secret

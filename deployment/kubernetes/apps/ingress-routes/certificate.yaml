@@ -5,7 +5,8 @@ metadata:
   namespace: apps
 spec:
   dnsNames:
-  - location-sharing-app.duckdns.org
+  # - location-sharing-app.duckdns.org
+  - location-sharing-app-2.duckdns.org
   issuerRef:
     name: le-prod-http
     kind: ClusterIssuer

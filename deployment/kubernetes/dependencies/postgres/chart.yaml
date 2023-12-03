@@ -13,7 +13,7 @@ spec:
       username: postgres
       password: changeme
 
-      replicaCount: 1
+      replicaCount: 3
 
       initdbScripts:
         setup_user_service.sql: |
@@ -29,7 +29,7 @@ spec:
     persistence:
       enabled: true
       storageClass: local-path
-      size: 250Mi
+      size: 1Gi
 
     service:
       ports:

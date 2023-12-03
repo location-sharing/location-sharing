@@ -6,7 +6,7 @@ metadata:
 data:
   SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-ha.kafka.svc.cluster.local:9092
   SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-ha-postgresql-ha-pgpool.postgres.svc.cluster.local:5432/user_service
-  SPRING_DATASOURCE_HIKARI_DDL_AUTO: update
+  SPRING_DATASOURCE_HIKARI_DDL_AUTO: create-drop
   
   # CORS_MAPPINGS_0_URL: "/**"
   # CORS_MAPPINGS_0_ORIGIN_PATTERNS: "http://localhost:[*],https://localhost:[*],http://location-sharing-app.duckdns.org,https://location-sharing-app.duckdns.org"

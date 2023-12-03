@@ -13,6 +13,20 @@ spec:
   jobImage: rancher/klipper-helm:v0.8.0-build20230510
   targetNamespace: traefik-ingress
   valuesContent: |-
+    deployment:
+      replicas: 2
+    
+    # resources:
+    #   requests:
+    #     cpu: 100m
+    #   limits:
+    #     cpu: 200m
+
+    # autoscaling:
+    #   enabled: true
+    #   minReplicas: 1
+    #   maxReplicas: 3
+
     logs:
       general:
         level: INFO

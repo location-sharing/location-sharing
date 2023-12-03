@@ -9,7 +9,7 @@ spec:
   version: 22.1.6
   targetNamespace: kafka
   valuesContent: |-
-    replicaCount: 1
+    replicaCount: 3
 
     service:
       ports:
@@ -18,25 +18,38 @@ spec:
     persistence:
       enabled: true
       storageClass: local-path
-      size: 250Mi
+      size: 1Gi
 
     serviceAccount:
       create: true
     rbac:
       create: true
 
-    # provisioning: 
-    #   enabled: true
-    #   topics:
-    #     - ""
+    provisioning:
+      enabled: true
+      topics:
+      - name: gateway.group.events
+        partitions: 4
+      - name: notifications.system
+        partitions: 2
+      - name: notifications.user
+        partitions: 2
+      - name: validation.user.request
+        partitions: 2
+      - name: validation.user.result
+        partitions: 2
+      - name: validation.group.user.request
+        partitions: 2
+      - name: validation.group.user.result
+        partitions: 2
 
     kraft:
       enabled: false
 
     zookeeper:
       enabled: true
-      replicaCount: 1
+      replicaCount: 3
       persistence:
         enabled: true
         storageClass: local-path
-        size: 200Mi
+        size: 250Mi

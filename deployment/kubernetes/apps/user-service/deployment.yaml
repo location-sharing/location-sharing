@@ -6,7 +6,8 @@ metadata:
     app: user-service
   namespace: apps
 spec:
-  replicas: 1
+  # controlled by hpa
+  # replicas: 1
   selector:
     matchLabels:
       app: user-service
@@ -24,5 +25,10 @@ spec:
         envFrom:
         - configMapRef: 
             name: user-service
+        resources:
+          requests:
+            cpu: 400m
+          limits:
+            cpu: 500m
       imagePullSecrets:
       - name: dockerhub-secret

@@ -1,0 +1,106 @@
+comments:
+#  AbsentOrWrongFileLicense:
+#    active: true
+  OutdatedDocumentation:
+    active: true
+#  UndocumentedPublicClass:
+#    active: true
+#  UndocumentedPublicFunction:
+#    active: true
+
+complexity:
+  # ndepend-style complexity, CyclomaticComplexMethod is the sonar-type complexity
+  # see https://detekt.dev/docs/rules/complexity
+  CognitiveComplexMethod:
+    active: true
+    threshold: 15
+  ComplexInterface:
+    active: true
+    threshold: 10
+    includeStaticDeclarations: false
+    includePrivateDeclarations: false
+    ignoreOverloaded: false
+  LabeledExpression:
+    active: true
+  NamedArguments:
+    active: true
+    threshold: 3
+  NestedScopeFunctions:
+    active: true
+    threshold: 1
+  StringLiteralDuplication:
+    active: true
+
+coroutines:
+  GlobalCoroutineUsage:
+    active: true
+  InjectDispatcher:
+    active: true
+  SuspendFunSwallowedCancellation:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+
+exceptions:
+  ObjectExtendsThrowable:
+    active: true
+
+naming:
+  BooleanPropertyNaming:
+    active: true
+  FunctionMaxLength:
+    active: true
+    maximumFunctionNameLength: 40
+  LambdaParameterNaming:
+    active: true
+  NonBooleanPropertyPrefixedWithIs:
+    active: true
+  VariableMaxLength:
+    active: true
+
+potential-bugs:
+  CastNullableToNonNullableType:
+    active: true
+  LateinitUsage:
+    active: true
+  NullCheckOnMutableProperty:
+    active: true
+
+style:
+  BracesOnIfStatements:
+    active: true
+    singleLine: 'never'
+    multiLine: 'consistent'
+  DataClassShouldBeImmutable:
+    active: true
+  DataClassContainsFunctions:
+    active: true
+  EqualsOnSignatureLine:
+    active: true
+  MaxChainedCallsOnSameLine:
+    active: true
+    maxChainedCalls: 4
+  MultilineRawStringIndentation:
+    active: true
+  NullableBooleanCheck:
+    active: true
+  SpacingBetweenPackageAndImports:
+    active: true
+  StringShouldBeRawString:
+    active: true
+    maxEscapedCharacterCount: 4
+  TrimMultilineRawString:
+    active: true
+  UnderscoresInNumericLiterals:
+    active: true
+  UnnecessaryBackticks:
+    active: true
+  UnusedImports:
+    active: true
+  UseIfEmptyOrIfBlank:
+    active: true
+  NewLineAtEndOfFile:
+    active: false
+
+formatting:
+  active: true
